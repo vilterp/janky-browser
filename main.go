@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/faiface/pixel"
-	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
 	jankybrowser "github.com/vilterp/jankybrowser/package"
 	"golang.org/x/image/colornames"
@@ -28,9 +27,7 @@ func run() {
 	for !win.Closed() {
 		win.Clear(colornames.White)
 
-		imd := imdraw.New(nil)
-		browser.Draw(imd)
-		imd.Draw(win)
+		browser.Draw(win)
 		win.Update()
 
 		<-fps
