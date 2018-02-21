@@ -87,8 +87,8 @@ func (cn *CircleNode) Children() []DOMNode {
 	return []DOMNode{}
 }
 func (cn *CircleNode) Draw(imd *imdraw.IMDraw) {
-	imd.Push(pixel.V(cn.x, cn.y))
 	imd.Color = cn.fill
+	imd.Push(pixel.V(cn.x, cn.y))
 	imd.Circle(cn.radius, 0)
 	// TODO: support stroke as well
 }
@@ -117,9 +117,9 @@ func (rn *RectNode) Children() []DOMNode {
 	return []DOMNode{}
 }
 func (rn *RectNode) Draw(imd *imdraw.IMDraw) {
+	imd.Color = rn.fill
 	imd.Push(pixel.V(rn.x, rn.y))
 	imd.Push(pixel.V(rn.x+rn.width, rn.y+rn.height))
-	imd.Color = rn.fill
 	imd.Rectangle(0)
 	// TODO: stroke
 }
