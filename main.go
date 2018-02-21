@@ -5,9 +5,11 @@ import (
 
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
-	jankybrowser "github.com/vilterp/jankybrowser/package"
+	"github.com/vilterp/jankybrowser/package"
 	"golang.org/x/image/colornames"
 )
+
+const initPage = "http://localhost:8081/circleAndRect.svg"
 
 func run() {
 	cfg := pixelgl.WindowConfig{
@@ -20,7 +22,7 @@ func run() {
 		panic(err)
 	}
 
-	page := jankybrowser.NewBrowserPage("http://example.com/", jankybrowser.ExampleDOMTree())
+	page := jankybrowser.NewBrowserPage(initPage, jankybrowser.ExampleDOMTree())
 	browser := jankybrowser.NewBrowser(win, page)
 
 	fps := time.Tick(time.Second / 120)

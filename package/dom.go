@@ -9,6 +9,8 @@ import (
 
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
+	"golang.org/x/image/colornames"
+	"golang.org/x/net/html"
 )
 
 type DOMNode interface {
@@ -45,6 +47,72 @@ func doFormat(node DOMNode, indent int) string {
 		return fmt.Sprintf("<%s%s>\n%s\n</%s>", node.Name(), attrsStr, childrenStr, node.Name())
 	}
 	return fmt.Sprintf("<%s%s />", node.Name(), attrsStr)
+}
+
+// domNodeFromParserNode discards anything it doesn't understand.
+// TODO: break this up, move it away...
+func domNodeFromParserNode(node *html.Node) DOMNode {
+	switch node.Type {
+	case html.ElementNode:
+		switch node.Data {
+		case "g":
+			g := &GroupNode{}
+			for child := node.FirstChild; child.NextSibling != nil; child = child.NextSibling {
+				childDOMNode := domNodeFromParserNode(child)
+				if childDOMNode != nil {
+					g.children = append(g.children, childDOMNode)
+				}
+			}
+		case "circle":
+			circle := &CircleNode{}
+			for _, attr := range node.Attr {
+				switch attr.Key {
+				case "x":
+					f, _ := strconv.ParseFloat(attr.Val, 2)
+					circle.x = f
+				case "y":
+					f, _ := strconv.ParseFloat(attr.Val, 2)
+					circle.y = f
+				case "radius":
+					f, _ := strconv.ParseFloat(attr.Val, 2)
+					circle.radius = f
+				case "color":
+					color, ok := colornames.Map[attr.Val]
+					if ok {
+						circle.fill = color
+					}
+				}
+			}
+			return circle
+		case "rect":
+			rect := &RectNode{}
+			for _, attr := range node.Attr {
+				switch attr.Key {
+				case "x":
+					f, _ := strconv.ParseFloat(attr.Val, 2)
+					rect.x = f
+				case "y":
+					f, _ := strconv.ParseFloat(attr.Val, 2)
+					rect.y = f
+				case "width":
+					f, _ := strconv.ParseFloat(attr.Val, 2)
+					rect.width = f
+				case "height":
+					f, _ := strconv.ParseFloat(attr.Val, 2)
+					rect.height = f
+				case "color":
+					color, ok := colornames.Map[attr.Val]
+					if ok {
+						rect.fill = color
+					}
+				}
+			}
+			return rect
+		}
+	default:
+		return nil
+	}
+	return nil
 }
 
 type GroupNode struct {
