@@ -9,7 +9,7 @@ import (
 	"golang.org/x/image/colornames"
 )
 
-const initPage = "http://localhost:8081/circleAndRect.svg"
+const initPage = "http://localhost:8081/justCircle.svg"
 
 func run() {
 	cfg := pixelgl.WindowConfig{
@@ -22,7 +22,7 @@ func run() {
 		panic(err)
 	}
 
-	page := jankybrowser.NewBrowserPage(initPage, jankybrowser.ExampleDOMTree())
+	page := jankybrowser.NewBrowserPage(initPage)
 	browser := jankybrowser.NewBrowser(win, page)
 
 	fps := time.Tick(time.Second / 120)

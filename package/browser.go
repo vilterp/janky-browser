@@ -2,6 +2,7 @@ package jankybrowser
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"sync"
@@ -11,7 +12,6 @@ import (
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/faiface/pixel/text"
 	"golang.org/x/image/colornames"
-	"golang.org/x/net/html"
 )
 
 type Browser struct {
@@ -45,6 +45,9 @@ func (b *Browser) Draw(t pixel.Target) {
 
 	b.currentPage.mu.RLock()
 	str := fmt.Sprintf("%s | %s", StateNames[b.currentPage.state], b.currentPage.url)
+	if b.currentPage.state == PageStateError {
+		str = fmt.Sprintf("%s | %s", str, b.currentPage.loadError.Error())
+	}
 	b.txt.WriteString(str)
 	b.currentPage.mu.RUnlock()
 
@@ -80,11 +83,10 @@ type BrowserPage struct {
 	rootNode  DOMNode // set when state = PageStateLoaded
 }
 
-func NewBrowserPage(url string, rootNode DOMNode) *BrowserPage {
+func NewBrowserPage(url string) *BrowserPage {
 	return &BrowserPage{
-		rootNode: rootNode,
-		state:    PageStateInit,
-		url:      url,
+		state: PageStateInit,
+		url:   url,
 	}
 }
 
@@ -117,7 +119,14 @@ func (bp *BrowserPage) doLoad() {
 		return
 	}
 
-	node, err := html.Parse(response.Body)
+	bytes, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		bp.state = PageStateError
+		bp.loadError = fmt.Errorf("error reading input stream: %s", err.Error())
+		return
+	}
+
+	node, err := Parse(bytes)
 	if err != nil {
 		bp.state = PageStateError
 		// TODO: structured error
@@ -125,12 +134,11 @@ func (bp *BrowserPage) doLoad() {
 		return
 	}
 
-	rootNode := domNodeFromParserNode(node)
 	bp.state = PageStateLoaded
-	if rootNode == nil {
-		rootNode = &GroupNode{}
+	if node == nil {
+		node = &GroupNode{}
 	}
-	bp.rootNode = rootNode
+	bp.rootNode = node
 	log.Println("rootNode:", Format(bp.rootNode))
 }
 

@@ -1,27 +1,27 @@
 package jankybrowser
 
 import (
-	"strings"
 	"testing"
 
 	"golang.org/x/image/colornames"
-	"golang.org/x/net/html"
 )
 
 const circleAndRectSource = `<g>
-  <circle fill="rgba(65535, 0, 0, 65535)" radius="5.00" x="2.00" y="3.00" />
-  <rect fill="rgba(0, 0, 65535, 65535)" height="10.00" width="5.00" x="2.00" y="3.00" />
+  <circle Fill="rgba(65535, 0, 0, 65535)" Radius="5.00" X="2.00" Y="3.00" />
+  <rect Fill="rgba(0, 0, 65535, 65535)" height="10.00" width="5.00" X="2.00" Y="3.00" />
 </g>`
 
 var circleAndRect = &GroupNode{
-	children: []DOMNode{
-		&CircleNode{
-			fill:   colornames.Red,
-			radius: 5,
-			x:      2,
-			y:      3,
+	Circle: []CircleNode{
+		{
+			Fill:   colornames.Red,
+			Radius: 5,
+			X:      2,
+			Y:      3,
 		},
-		&RectNode{
+	},
+	Rect: []RectNode{
+		{
 			fill:   colornames.Blue,
 			x:      2,
 			y:      3,
@@ -40,19 +40,23 @@ func TestDOMFormat(t *testing.T) {
 	}
 }
 
-func TestDOMFromParserNode(t *testing.T) {
-	source := circleAndRectSource
-	parsed, err := html.Parse(strings.NewReader(source))
+func TestDOMParse(t *testing.T) {
+	//source := circleAndRectSource
+	source := `<circle radius="10" x="11" y="12" />`
+	parsed, err := Parse([]byte(source))
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Log(parsed)
-	domNode := domNodeFromParserNode(parsed)
-	expected := circleAndRect
-	if domNode == nil {
+	expected := &CircleNode{
+		Radius: 10,
+		X:      11,
+		Y:      12,
+	}
+	if parsed == nil {
 		t.Fatalf("expected:\n%s\ngot nil", Format(expected))
 	}
-	if domNode != expected {
-		t.Fatalf("expected:\n%s\ngot:\n%s", Format(expected), Format(domNode))
+	if parsed != expected {
+		t.Fatalf("expected:\n%s\ngot:\n%s", Format(expected), Format(parsed))
 	}
 }

@@ -1,6 +1,7 @@
 package jankybrowser
 
 import (
+	"encoding/xml"
 	"fmt"
 	"image/color"
 	"sort"
@@ -10,7 +11,6 @@ import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 	"golang.org/x/image/colornames"
-	"golang.org/x/net/html"
 )
 
 type DOMNode interface {
@@ -49,74 +49,88 @@ func doFormat(node DOMNode, indent int) string {
 	return fmt.Sprintf("<%s%s />", node.Name(), attrsStr)
 }
 
-// domNodeFromParserNode discards anything it doesn't understand.
-// TODO: break this up, move it away...
-func domNodeFromParserNode(node *html.Node) DOMNode {
-	switch node.Type {
-	case html.ElementNode:
-		switch node.Data {
-		case "g":
-			g := &GroupNode{}
-			for child := node.FirstChild; child.NextSibling != nil; child = child.NextSibling {
-				childDOMNode := domNodeFromParserNode(child)
-				if childDOMNode != nil {
-					g.children = append(g.children, childDOMNode)
-				}
-			}
-		case "circle":
-			circle := &CircleNode{}
-			for _, attr := range node.Attr {
-				switch attr.Key {
-				case "x":
-					f, _ := strconv.ParseFloat(attr.Val, 2)
-					circle.x = f
-				case "y":
-					f, _ := strconv.ParseFloat(attr.Val, 2)
-					circle.y = f
-				case "radius":
-					f, _ := strconv.ParseFloat(attr.Val, 2)
-					circle.radius = f
-				case "color":
-					color, ok := colornames.Map[attr.Val]
-					if ok {
-						circle.fill = color
-					}
-				}
-			}
-			return circle
-		case "rect":
-			rect := &RectNode{}
-			for _, attr := range node.Attr {
-				switch attr.Key {
-				case "x":
-					f, _ := strconv.ParseFloat(attr.Val, 2)
-					rect.x = f
-				case "y":
-					f, _ := strconv.ParseFloat(attr.Val, 2)
-					rect.y = f
-				case "width":
-					f, _ := strconv.ParseFloat(attr.Val, 2)
-					rect.width = f
-				case "height":
-					f, _ := strconv.ParseFloat(attr.Val, 2)
-					rect.height = f
-				case "color":
-					color, ok := colornames.Map[attr.Val]
-					if ok {
-						rect.fill = color
-					}
-				}
-			}
-			return rect
-		}
-	default:
-		return nil
+func Parse(data []byte) (DOMNode, error) {
+	g := CircleNode{}
+	err := xml.Unmarshal(data, &g)
+	if err != nil {
+		return nil, err
 	}
-	return nil
+	return &g, nil
 }
 
+// domNodeFromParserNode discards anything it doesn't understand.
+// TODO: break this up, move it away...
+//func domNodeFromParserNode(node *html.Node) DOMNode {
+//	switch node.Type {
+//	case html.ElementNode:
+//		switch node.Data {
+//		case "g":
+//			g := &GroupNode{}
+//			for child := node.FirstChild; child.NextSibling != nil; child = child.NextSibling {
+//				childDOMNode := domNodeFromParserNode(child)
+//				if childDOMNode != nil {
+//					g.children = append(g.children, childDOMNode)
+//				}
+//			}
+//		case "circle":
+//			circle := &CircleNode{}
+//			for _, attr := range node.Attr {
+//				switch attr.Key {
+//				case "X":
+//					f, _ := strconv.ParseFloat(attr.Val, 2)
+//					circle.X = f
+//				case "Y":
+//					f, _ := strconv.ParseFloat(attr.Val, 2)
+//					circle.Y = f
+//				case "Radius":
+//					f, _ := strconv.ParseFloat(attr.Val, 2)
+//					circle.Radius = f
+//				case "color":
+//					color, ok := colornames.Map[attr.Val]
+//					if ok {
+//						circle.Fill = color
+//					}
+//				}
+//			}
+//			return circle
+//		case "rect":
+//			rect := &RectNode{}
+//			for _, attr := range node.Attr {
+//				switch attr.Key {
+//				case "X":
+//					f, _ := strconv.ParseFloat(attr.Val, 2)
+//					rect.X = f
+//				case "Y":
+//					f, _ := strconv.ParseFloat(attr.Val, 2)
+//					rect.Y = f
+//				case "width":
+//					f, _ := strconv.ParseFloat(attr.Val, 2)
+//					rect.width = f
+//				case "height":
+//					f, _ := strconv.ParseFloat(attr.Val, 2)
+//					rect.height = f
+//				case "color":
+//					color, ok := colornames.Map[attr.Val]
+//					if ok {
+//						rect.Fill = color
+//					}
+//				}
+//			}
+//			return rect
+//		}
+//	default:
+//		return nil
+//	}
+//	return nil
+//}
+
 type GroupNode struct {
-	children []DOMNode
+	XMLName xml.Name `xml:"g"`
+
+	Rect   []RectNode
+	Circle []CircleNode
+	//
+	//children []DOMNode
 }
 
 var _ DOMNode = &GroupNode{}
@@ -124,44 +138,62 @@ var _ DOMNode = &GroupNode{}
 func (gn *GroupNode) Name() string             { return "g" }
 func (gn *GroupNode) Attrs() map[string]string { return make(map[string]string) }
 func (gn *GroupNode) Children() []DOMNode {
-	return gn.children
+	var ret []DOMNode
+	for _, rect := range gn.Rect {
+		ret = append(ret, &rect)
+	}
+	for _, circle := range gn.Circle {
+		ret = append(ret, &circle)
+	}
+	return ret
 }
 func (gn *GroupNode) Draw(imd *imdraw.IMDraw) {
-	for _, child := range gn.children {
+	for _, child := range gn.Children() {
 		// TODO: draw witn transform
 		child.Draw(imd)
 	}
 }
 
 type CircleNode struct {
-	radius float64
-	x      float64
-	y      float64
-	fill   color.Color
+	XMLName xml.Name `xml:"circle"`
+
+	Radius float64 `xml:"radius,attr"`
+	X      float64 `xml:"x,attr"`
+	Y      float64 `xml:"y,attr"`
+	Fill   color.Color
 }
 
 var _ DOMNode = &CircleNode{}
 
 func (cn *CircleNode) Name() string { return "circle" }
 func (cn *CircleNode) Attrs() map[string]string {
-	return map[string]string{
-		"radius": strconv.FormatFloat(cn.radius, 'f', 2, 64),
-		"x":      strconv.FormatFloat(cn.x, 'f', 2, 64),
-		"y":      strconv.FormatFloat(cn.y, 'f', 2, 64),
-		"fill":   colorToString(cn.fill),
+	m := map[string]string{
+		"radius": strconv.FormatFloat(cn.Radius, 'f', 2, 64),
+		"x":      strconv.FormatFloat(cn.X, 'f', 2, 64),
+		"y":      strconv.FormatFloat(cn.Y, 'f', 2, 64),
 	}
+	if cn.Fill != nil {
+		m["fill"] = colorToString(cn.Fill)
+	}
+	return m
 }
 func (cn *CircleNode) Children() []DOMNode {
 	return []DOMNode{}
 }
 func (cn *CircleNode) Draw(imd *imdraw.IMDraw) {
-	imd.Color = cn.fill
-	imd.Push(pixel.V(cn.x, cn.y))
-	imd.Circle(cn.radius, 0)
+	if cn.Fill != nil {
+		imd.Color = cn.Fill
+	} else {
+		imd.Color = colornames.Black
+	}
+	imd.Push(pixel.V(cn.X, cn.Y))
+	imd.Circle(cn.Radius, 0)
 	// TODO: support stroke as well
 }
 
 type RectNode struct {
+	XMLName xml.Name `xml:"rect"`
+
 	x      float64
 	y      float64
 	width  float64
