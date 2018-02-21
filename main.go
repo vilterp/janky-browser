@@ -25,7 +25,7 @@ func run() {
 	page := jankybrowser.NewBrowserPage(initPage)
 	browser := jankybrowser.NewBrowser(win, page)
 
-	fps := time.Tick(time.Second / 120)
+	fps := time.Tick(time.Second / 60)
 	for !win.Closed() {
 		win.Clear(colornames.White)
 

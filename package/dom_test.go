@@ -7,8 +7,8 @@ import (
 )
 
 const circleAndRectSource = `<g>
-  <circle Fill="rgba(65535, 0, 0, 65535)" Radius="5.00" X="2.00" Y="3.00" />
-  <rect Fill="rgba(0, 0, 65535, 65535)" height="10.00" width="5.00" X="2.00" Y="3.00" />
+  <rect fill="rgba(0, 0, 65535, 65535)" height="10.00" width="5.00" x="2.00" y="3.00" />
+  <circle fill="rgba(65535, 0, 0, 65535)" radius="5.00" x="2.00" y="3.00" />
 </g>`
 
 var circleAndRect = &GroupNode{
@@ -56,7 +56,7 @@ func TestDOMParse(t *testing.T) {
 	if parsed == nil {
 		t.Fatalf("expected:\n%s\ngot nil", Format(expected))
 	}
-	if parsed != expected {
+	if Format(parsed) != Format(expected) {
 		t.Fatalf("expected:\n%s\ngot:\n%s", Format(expected), Format(parsed))
 	}
 }
