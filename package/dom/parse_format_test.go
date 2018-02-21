@@ -1,4 +1,4 @@
-package jankybrowser
+package dom
 
 import (
 	"testing"

@@ -11,6 +11,7 @@ import (
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/faiface/pixel/text"
+	"github.com/vilterp/jankybrowser/package/dom"
 	"golang.org/x/image/colornames"
 )
 
@@ -79,8 +80,8 @@ type BrowserPage struct {
 
 	url       string
 	state     PageState
-	loadError error   // set when state = PageStateError
-	rootNode  DOMNode // set when state = PageStateLoaded
+	loadError error       // set when state = PageStateError
+	rootNode  dom.DOMNode // set when state = PageStateLoaded
 }
 
 func NewBrowserPage(url string) *BrowserPage {
@@ -126,7 +127,7 @@ func (bp *BrowserPage) doLoad() {
 		return
 	}
 
-	node, err := Parse(bytes)
+	node, err := dom.Parse(bytes)
 	if err != nil {
 		bp.state = PageStateError
 		// TODO: structured error
@@ -136,10 +137,10 @@ func (bp *BrowserPage) doLoad() {
 
 	bp.state = PageStateLoaded
 	if node == nil {
-		node = &GroupNode{}
+		node = &dom.GroupNode{}
 	}
 	bp.rootNode = node
-	log.Println("rootNode:", Format(bp.rootNode))
+	log.Println("rootNode:", dom.Format(bp.rootNode))
 }
 
 func (bp *BrowserPage) Draw(imd *imdraw.IMDraw) {
