@@ -1,1 +1,3 @@
-<text value="Hello world" x="100" y="200" />
+<g>
+  <text value="Hello world" x="100" y="200" />
+</g>
