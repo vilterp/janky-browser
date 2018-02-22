@@ -9,9 +9,7 @@ import (
 
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
-	"github.com/faiface/pixel/text"
 	"github.com/vilterp/jankybrowser/package/dom"
-	"golang.org/x/image/colornames"
 )
 
 type Browser struct {
@@ -19,34 +17,34 @@ type Browser struct {
 	currentPage *BrowserPage
 
 	// Text for drawing URL
-	txt *text.Text
+	urlBar *dom.TextNode
 }
 
 func NewBrowser(window *pixelgl.Window, currentPage *BrowserPage) *Browser {
-	txt := text.New(pixel.V(0, 0), dom.Atlas)
-	txt.Color = colornames.Black
-
 	b := &Browser{
 		currentPage: currentPage,
 		window:      window,
-		txt:         txt,
+		urlBar:      &dom.TextNode{},
 	}
 	b.currentPage.Load()
 	return b
 }
 
 func (b *Browser) Draw(t pixel.Target) {
-	b.txt.Clear()
-
+	// Update & draw URL bar.
 	b.currentPage.mu.RLock()
 	str := fmt.Sprintf("%s | %s", StateNames[b.currentPage.state], b.currentPage.url)
 	if b.currentPage.state == PageStateError {
 		str = fmt.Sprintf("%s | %s", str, b.currentPage.loadError.Error())
 	}
-	b.txt.WriteString(str)
 	b.currentPage.mu.RUnlock()
 
-	b.txt.Draw(t, pixel.IM.Moved(pixel.V(10, b.window.Bounds().H()-20.0)))
+	b.urlBar.Value = str
+	b.urlBar.X = 10
+	b.urlBar.Y = b.window.Bounds().H() - 20
+	b.urlBar.Draw(t)
+
+	// Draw page.
 	b.currentPage.Draw(t)
 }
 
