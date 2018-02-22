@@ -11,14 +11,14 @@ const circleAndRectSource = `
 </g>`
 
 var circleAndRect = &GroupNode{
-	CircleNode: []CircleNode{
+	CircleNode: []*CircleNode{
 		{
 			Radius: 5,
 			X:      2,
 			Y:      3,
 		},
 	},
-	RectNode: []RectNode{
+	RectNode: []*RectNode{
 		{
 			X:      2,
 			Y:      3,

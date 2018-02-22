@@ -1,1 +1,3 @@
-<circle fill="rgba(65535, 0, 0, 65535)" radius="50" x="200" y="300" />
+<g>
+  <circle fill="green" radius="50" x="200" y="300" />
+</g>

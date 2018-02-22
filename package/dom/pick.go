@@ -4,22 +4,24 @@ import "github.com/faiface/pixel"
 
 // TODO: really, Pick should return a tree, because
 // you can be over multiple things at once.
-func Pick(node Node, pt pixel.Vec) Node {
+func Pick(node Node, pt pixel.Vec) []Node {
 	switch node.(type) {
 	case *RectNode, *CircleNode, *TextNode:
 		if node.Contains(pt) {
-			return node
+			return []Node{node}
 		}
-		return nil
+		return []Node{}
 	case *GroupNode:
 		// TODO: support transforms on groups
+		var res []Node
 		for _, child := range node.Children() {
-			res := Pick(child, pt)
-			if res != nil {
-				return res
-			}
+			childRes := Pick(child, pt)
+			res = append(res, childRes...)
 		}
-		return nil
+		if len(res) > 0 {
+			res = append(res, node)
+		}
+		return res
 	}
-	return nil
+	return []Node{}
 }

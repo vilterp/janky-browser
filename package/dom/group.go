@@ -2,7 +2,6 @@ package dom
 
 import (
 	"encoding/xml"
-	"log"
 
 	"github.com/faiface/pixel"
 )
@@ -10,11 +9,14 @@ import (
 type GroupNode struct {
 	XMLName xml.Name `xml:"g"`
 
+	Href string `xml:"href,attr"`
+
 	// TODO: this destroys ordering...
 	// not sure how to get it to understand an interface...
 	RectNode   []*RectNode   `xml:"rect"`
 	CircleNode []*CircleNode `xml:"circle"`
 	TextNode   []*TextNode   `xml:"text"`
+	GroupNode  []*GroupNode  `xml:"g"`
 	//
 	//children []Node
 }
@@ -22,7 +24,6 @@ type GroupNode struct {
 var _ Node = &GroupNode{}
 
 func (gn *GroupNode) Init() {
-	log.Println("g init")
 	for _, child := range gn.Children() {
 		child.Init()
 	}
@@ -42,6 +43,9 @@ func (gn *GroupNode) Children() []Node {
 	for _, text := range gn.TextNode {
 		ret = append(ret, text)
 	}
+	for _, group := range gn.GroupNode {
+		ret = append(ret, group)
+	}
 	return ret
 }
 func (gn *GroupNode) Draw(t pixel.Target) {
@@ -51,6 +55,11 @@ func (gn *GroupNode) Draw(t pixel.Target) {
 	}
 }
 
-func (gn *GroupNode) Contains(_ pixel.Vec) bool {
+func (gn *GroupNode) Contains(pt pixel.Vec) bool {
+	for _, child := range gn.Children() {
+		if child.Contains(pt) {
+			return true
+		}
+	}
 	return false
 }

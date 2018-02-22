@@ -22,8 +22,7 @@ func run() {
 		panic(err)
 	}
 
-	page := jankybrowser.NewBrowserPage(initPage)
-	browser := jankybrowser.NewBrowser(win, page)
+	browser := jankybrowser.NewBrowser(win, initPage)
 
 	fps := time.Tick(time.Second / 60)
 	for !win.Closed() {

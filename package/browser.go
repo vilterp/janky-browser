@@ -20,14 +20,13 @@ type Browser struct {
 	urlBar *dom.TextNode
 }
 
-func NewBrowser(window *pixelgl.Window, currentPage *BrowserPage) *Browser {
+func NewBrowser(window *pixelgl.Window, initialURL string) *Browser {
 	b := &Browser{
-		currentPage: currentPage,
-		window:      window,
-		urlBar:      &dom.TextNode{},
+		window: window,
+		urlBar: &dom.TextNode{},
 	}
 	b.urlBar.Init()
-	b.currentPage.Load()
+	b.NavigateTo(initialURL)
 	return b
 }
 
@@ -50,7 +49,16 @@ func (b *Browser) Draw(t pixel.Target) {
 }
 
 func (b *Browser) ProcessMouseEvents(pt pixel.Vec) {
-	b.currentPage.ProcessMouseEvents(pt)
+	navigateTo := b.currentPage.ProcessMouseEvents(pt)
+	if navigateTo != "" {
+		b.NavigateTo(navigateTo)
+	}
+}
+
+func (b *Browser) NavigateTo(url string) {
+	log.Println("navigate to", url)
+	b.currentPage = NewBrowserPage(url)
+	b.currentPage.Load()
 }
 
 type PageState = int
@@ -155,14 +163,27 @@ func (bp *BrowserPage) Draw(t pixel.Target) {
 	}
 }
 
-func (bp *BrowserPage) ProcessMouseEvents(pt pixel.Vec) {
-	node := bp.GetHoveredNode(pt)
-	if node != nil {
-		log.Println("hovering over", dom.Format(node))
+func (bp *BrowserPage) ProcessMouseEvents(pt pixel.Vec) string {
+	hoveredNodes := bp.GetHoveredNodes(pt)
+	var navigateTo string
+	if len(hoveredNodes) > 0 {
+		//var hoveredNodeStrs []string
+		//for _, hoveredNode := range hoveredNodes {
+		//	hoveredNodeStrs = append(hoveredNodeStrs, dom.Format(hoveredNode))
+		//}
+		for _, hoveredNode := range hoveredNodes {
+			switch n := hoveredNode.(type) {
+			case *dom.GroupNode:
+				if n.Href != "" {
+					navigateTo = n.Href
+				}
+			}
+		}
 	}
+	return navigateTo
 }
 
-func (bp *BrowserPage) GetHoveredNode(pt pixel.Vec) dom.Node {
+func (bp *BrowserPage) GetHoveredNodes(pt pixel.Vec) []dom.Node {
 	switch bp.state {
 	case PageStateLoaded:
 		bp.mu.RLock()
