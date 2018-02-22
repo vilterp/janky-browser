@@ -31,11 +31,8 @@ type Browser struct {
 func NewBrowser(window *pixelgl.Window, initialURL string) *Browser {
 	backButton := &dom.CircleNode{
 		Radius: 7,
-		Fill:   "blue",
 	}
-	backgroundRect := &dom.RectNode{
-		Fill: "lightgrey",
-	}
+	backgroundRect := &dom.RectNode{}
 	urlBar := &dom.TextNode{}
 	stateText := &dom.TextNode{}
 	errorText := &dom.TextNode{}
@@ -46,8 +43,8 @@ func NewBrowser(window *pixelgl.Window, initialURL string) *Browser {
 			errorText,
 		},
 		CircleNode: []*dom.CircleNode{backButton},
-		RectNode:   []*dom.RectNode{
-		//backgroundRect,
+		RectNode: []*dom.RectNode{
+			backgroundRect,
 		},
 	}
 
@@ -80,11 +77,18 @@ func (b *Browser) DrawChrome(t pixel.Target) {
 	b.currentPage.mu.RLock()
 	defer b.currentPage.mu.RUnlock()
 
+	const urlBarStart = 90
+
 	// Update background rect.
-	b.backgroundRect.Width = b.window.Bounds().W()
-	b.backgroundRect.X = 0
+	b.backgroundRect.Width = b.window.Bounds().W() - urlBarStart + 5
+	b.backgroundRect.X = urlBarStart - 5
 	b.backgroundRect.Y = b.window.Bounds().H() - 30
 	b.backgroundRect.Height = 30
+	if b.urlBarFocused {
+		b.backgroundRect.Fill = "lightgrey"
+	} else {
+		b.backgroundRect.Fill = "white"
+	}
 
 	// Update URL bar.
 	urlToShow := b.newURL
@@ -94,7 +98,7 @@ func (b *Browser) DrawChrome(t pixel.Target) {
 		b.urlBar.Fill = "black"
 	}
 	b.urlBar.Value = urlToShow
-	b.urlBar.X = 90
+	b.urlBar.X = urlBarStart
 	b.urlBar.Y = b.window.Bounds().H() - 20
 
 	// Update status text.
@@ -141,23 +145,37 @@ func (b *Browser) ProcessMouseEvents(pt pixel.Vec, mouseDown bool, mouseJustDown
 	}
 }
 
-func (b *Browser) AddText(t string) {
+func (b *Browser) ProcessTyping(t string) {
+	if !b.urlBarFocused {
+		return
+	}
 	b.newURL += t
 }
 
-func (b *Browser) Backspace() {
+func (b *Browser) ProcessBackspace() {
+	if !b.urlBarFocused {
+		return
+	}
 	if b.newURL == "" {
 		return
 	}
 	b.newURL = b.newURL[:len(b.newURL)-1]
 }
 
-func (b *Browser) NavigateToNewURL() {
+func (b *Browser) ProcessEnter() {
+	if !b.urlBarFocused {
+		return
+	}
 	b.NavigateTo(b.newURL)
+	b.urlBarFocused = false
 }
 
-func (b *Browser) ToggleURLFocus() {
-	b.urlBarFocused = !b.urlBarFocused
+func (b *Browser) FocusURLBar() {
+	b.urlBarFocused = true
+}
+
+func (b *Browser) UnFocusURLBar() {
+	b.urlBarFocused = false
 }
 
 func (b *Browser) NavigateTo(url string) {
