@@ -1,4 +1,5 @@
 <g>
   <circle fill="red" radius="50" x="200" y="300" />
   <rect fill="blue" height="100" width="200" x="500" y="600" />
+  <text value="Hello world" x="500" y="500" />
 </g>

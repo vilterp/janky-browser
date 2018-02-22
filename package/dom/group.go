@@ -9,8 +9,11 @@ import (
 type GroupNode struct {
 	XMLName xml.Name `xml:"g"`
 
+	// TODO: this destroys ordering...
+	// not sure how to get it to understand an interface...
 	RectNode   []RectNode   `xml:"rect"`
 	CircleNode []CircleNode `xml:"circle"`
+	TextNode   []TextNode   `xml:"text"`
 	//
 	//children []DOMNode
 }
@@ -26,6 +29,9 @@ func (gn *GroupNode) Children() []DOMNode {
 	}
 	for _, circle := range gn.CircleNode {
 		ret = append(ret, &circle)
+	}
+	for _, text := range gn.TextNode {
+		ret = append(ret, &text)
 	}
 	return ret
 }
