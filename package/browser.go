@@ -46,7 +46,9 @@ func NewBrowser(window *pixelgl.Window, initialURL string) *Browser {
 			errorText,
 		},
 		CircleNode: []*dom.CircleNode{backButton},
-		RectNode:   []*dom.RectNode{},
+		RectNode:   []*dom.RectNode{
+		//backgroundRect,
+		},
 	}
 
 	b := &Browser{
@@ -101,6 +103,13 @@ func (b *Browser) DrawChrome(t pixel.Target) {
 	b.stateText.Y = b.window.Bounds().H() - 20
 
 	// Update error text.
+	errorText := ""
+	if b.currentPage.state == PageStateError {
+		errorText = b.currentPage.loadError.Error()
+	}
+	b.errorText.Value = errorText
+	b.errorText.X = 20
+	b.errorText.Y = b.window.Bounds().H() - 50
 
 	// Update back button.
 	if len(b.history) > 1 {
