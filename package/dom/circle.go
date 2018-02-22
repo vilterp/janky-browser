@@ -18,10 +18,10 @@ type CircleNode struct {
 	Fill   string  `xml:"fill,attr"`
 }
 
-var _ DOMNode = &CircleNode{}
+var _ Node = &CircleNode{}
 
-func (cn *CircleNode) Name() string        { return "circle" }
-func (cn *CircleNode) Children() []DOMNode { return []DOMNode{} }
+func (cn *CircleNode) Name() string     { return "circle" }
+func (cn *CircleNode) Children() []Node { return []Node{} }
 
 func (cn *CircleNode) Attrs() map[string]string {
 	return map[string]string{

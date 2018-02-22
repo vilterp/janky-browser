@@ -17,7 +17,7 @@ type TextNode struct {
 	Y     float64 `xml:"y,attr"`
 }
 
-var _ DOMNode = &TextNode{}
+var _ Node = &TextNode{}
 
 var Atlas *text.Atlas
 
@@ -32,8 +32,8 @@ func init() {
 	Atlas = text.Atlas7x13
 }
 
-func (tn *TextNode) Name() string        { return "text" }
-func (tn *TextNode) Children() []DOMNode { return []DOMNode{} }
+func (tn *TextNode) Name() string     { return "text" }
+func (tn *TextNode) Children() []Node { return []Node{} }
 
 func (tn *TextNode) Attrs() map[string]string {
 	return map[string]string{

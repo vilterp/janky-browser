@@ -7,11 +7,11 @@ import (
 	"strings"
 )
 
-func Format(node DOMNode) string {
+func Format(node Node) string {
 	return doFormat(node, 1)
 }
 
-func doFormat(node DOMNode, indent int) string {
+func doFormat(node Node, indent int) string {
 	var attrs []string
 	for key, val := range node.Attrs() {
 		attrs = append(attrs, fmt.Sprintf("%s=%#v", key, val))
@@ -35,7 +35,7 @@ func doFormat(node DOMNode, indent int) string {
 	return fmt.Sprintf("<%s%s />", node.Name(), attrsStr)
 }
 
-func Parse(data []byte) (DOMNode, error) {
+func Parse(data []byte) (Node, error) {
 	g := GroupNode{}
 	err := xml.Unmarshal(data, &g)
 	if err != nil {

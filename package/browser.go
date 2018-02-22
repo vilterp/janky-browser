@@ -73,8 +73,8 @@ type BrowserPage struct {
 
 	url       string
 	state     PageState
-	loadError error       // set when state = PageStateError
-	rootNode  dom.DOMNode // set when state = PageStateLoaded
+	loadError error    // set when state = PageStateError
+	rootNode  dom.Node // set when state = PageStateLoaded
 }
 
 func NewBrowserPage(url string) *BrowserPage {
@@ -160,7 +160,7 @@ func (bp *BrowserPage) ProcessMouseEvents(pt pixel.Vec) {
 	}
 }
 
-func (bp *BrowserPage) GetHoveredNode(pt pixel.Vec) dom.DOMNode {
+func (bp *BrowserPage) GetHoveredNode(pt pixel.Vec) dom.Node {
 	switch bp.state {
 	case PageStateLoaded:
 		bp.mu.RLock()

@@ -19,10 +19,10 @@ type RectNode struct {
 	Fill   string  `xml:"fill,attr"`
 }
 
-var _ DOMNode = &RectNode{}
+var _ Node = &RectNode{}
 
-func (rn *RectNode) Name() string        { return "rect" }
-func (rn *RectNode) Children() []DOMNode { return []DOMNode{} }
+func (rn *RectNode) Name() string     { return "rect" }
+func (rn *RectNode) Children() []Node { return []Node{} }
 
 func (rn *RectNode) Attrs() map[string]string {
 	return map[string]string{

@@ -15,16 +15,16 @@ type GroupNode struct {
 	CircleNode []CircleNode `xml:"circle"`
 	TextNode   []TextNode   `xml:"text"`
 	//
-	//children []DOMNode
+	//children []Node
 }
 
-var _ DOMNode = &GroupNode{}
+var _ Node = &GroupNode{}
 
 func (gn *GroupNode) Name() string             { return "g" }
 func (gn *GroupNode) Attrs() map[string]string { return make(map[string]string) }
 
-func (gn *GroupNode) Children() []DOMNode {
-	var ret []DOMNode
+func (gn *GroupNode) Children() []Node {
+	var ret []Node
 	for _, rect := range gn.RectNode {
 		ret = append(ret, &rect)
 	}
