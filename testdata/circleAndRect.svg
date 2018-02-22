@@ -1,4 +1,4 @@
 <g>
-  <circle fill="rgba(65535, 0, 0, 65535)" radius="50" x="200" y="300" />
-  <rect fill="rgba(0, 0, 65535, 65535)" height="100" width="200" x="500" y="600" />
+  <circle fill="red" radius="50" x="200" y="300" />
+  <rect fill="blue" height="100" width="200" x="500" y="600" />
 </g>

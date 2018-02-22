@@ -2,7 +2,6 @@ package dom
 
 import (
 	"encoding/xml"
-	"image/color"
 	"strconv"
 
 	"github.com/faiface/pixel"
@@ -16,22 +15,19 @@ type CircleNode struct {
 	Radius float64 `xml:"radius,attr"`
 	X      float64 `xml:"x,attr"`
 	Y      float64 `xml:"y,attr"`
-	Fill   color.Color
+	Fill   string  `xml:"fill,attr"`
 }
 
 var _ DOMNode = &CircleNode{}
 
 func (cn *CircleNode) Name() string { return "circle" }
 func (cn *CircleNode) Attrs() map[string]string {
-	m := map[string]string{
+	return map[string]string{
 		"radius": strconv.FormatFloat(cn.Radius, 'f', 2, 64),
 		"x":      strconv.FormatFloat(cn.X, 'f', 2, 64),
 		"y":      strconv.FormatFloat(cn.Y, 'f', 2, 64),
+		"fill":   cn.Fill,
 	}
-	if cn.Fill != nil {
-		m["fill"] = colorToString(cn.Fill)
-	}
-	return m
 }
 func (cn *CircleNode) Children() []DOMNode {
 	return []DOMNode{}
@@ -39,10 +35,11 @@ func (cn *CircleNode) Children() []DOMNode {
 func (cn *CircleNode) Draw(t pixel.Target) {
 	imd := imdraw.New(nil)
 
-	if cn.Fill != nil {
-		imd.Color = cn.Fill
-	} else {
+	color, ok := colornames.Map[cn.Fill]
+	if !ok {
 		imd.Color = colornames.Black
+	} else {
+		imd.Color = color
 	}
 	imd.Push(pixel.V(cn.X, cn.Y))
 	imd.Circle(cn.Radius, 0)
