@@ -36,7 +36,9 @@ func (cn *CircleNode) Attrs() map[string]string {
 func (cn *CircleNode) Children() []DOMNode {
 	return []DOMNode{}
 }
-func (cn *CircleNode) Draw(imd *imdraw.IMDraw) {
+func (cn *CircleNode) Draw(t pixel.Target) {
+	imd := imdraw.New(nil)
+
 	if cn.Fill != nil {
 		imd.Color = cn.Fill
 	} else {
@@ -45,4 +47,6 @@ func (cn *CircleNode) Draw(imd *imdraw.IMDraw) {
 	imd.Push(pixel.V(cn.X, cn.Y))
 	imd.Circle(cn.Radius, 0)
 	// TODO: support stroke as well
+
+	imd.Draw(t)
 }

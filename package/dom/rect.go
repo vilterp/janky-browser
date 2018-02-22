@@ -34,10 +34,14 @@ func (rn *RectNode) Attrs() map[string]string {
 func (rn *RectNode) Children() []DOMNode {
 	return []DOMNode{}
 }
-func (rn *RectNode) Draw(imd *imdraw.IMDraw) {
+func (rn *RectNode) Draw(t pixel.Target) {
+	imd := imdraw.New(nil)
+
 	imd.Color = rn.fill
 	imd.Push(pixel.V(rn.x, rn.y))
 	imd.Push(pixel.V(rn.x+rn.width, rn.y+rn.height))
 	imd.Rectangle(0)
 	// TODO: stroke
+
+	imd.Draw(t)
 }

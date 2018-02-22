@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"image/color"
 
-	"github.com/faiface/pixel/imdraw"
+	"github.com/faiface/pixel"
 )
 
 type DOMNode interface {
@@ -12,7 +12,7 @@ type DOMNode interface {
 	Attrs() map[string]string
 	Children() []DOMNode
 
-	Draw(*imdraw.IMDraw)
+	Draw(target pixel.Target)
 }
 
 func colorToString(c color.Color) string {

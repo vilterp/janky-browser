@@ -3,7 +3,7 @@ package dom
 import (
 	"encoding/xml"
 
-	"github.com/faiface/pixel/imdraw"
+	"github.com/faiface/pixel"
 )
 
 type GroupNode struct {
@@ -29,9 +29,9 @@ func (gn *GroupNode) Children() []DOMNode {
 	}
 	return ret
 }
-func (gn *GroupNode) Draw(imd *imdraw.IMDraw) {
+func (gn *GroupNode) Draw(t pixel.Target) {
 	for _, child := range gn.Children() {
 		// TODO: draw witn transform
-		child.Draw(imd)
+		child.Draw(t)
 	}
 }

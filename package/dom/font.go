@@ -1,4 +1,4 @@
-package jankybrowser
+package dom
 
 import (
 	"io/ioutil"
@@ -8,7 +8,7 @@ import (
 	"golang.org/x/image/font"
 )
 
-func loadTTF(path string, size float64) (font.Face, error) {
+func LoadTTF(path string, size float64) (font.Face, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
