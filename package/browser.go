@@ -18,12 +18,14 @@ type Browser struct {
 	newURL string
 
 	// Stuff for drawing the chrome.
-	chromeRenderer *ContentRenderer
-	backgroundRect *dom.RectNode
-	backButton     *dom.CircleNode
-	urlBar         *dom.TextNode
+	chromeContentRenderer *ContentRenderer
+	backgroundRect        *dom.RectNode
+	backButton            *dom.CircleNode
+	urlBar                *dom.TextNode
+	stateText             *dom.TextNode
+	errorText             *dom.TextNode
 
-	textTest *dom.TextNode
+	urlBarFocused bool
 }
 
 func NewBrowser(window *pixelgl.Window, initialURL string) *Browser {
@@ -34,15 +36,14 @@ func NewBrowser(window *pixelgl.Window, initialURL string) *Browser {
 	backgroundRect := &dom.RectNode{
 		Fill: "lightgrey",
 	}
-	textTest := &dom.TextNode{
-		X: 300,
-		Y: 200,
-	}
 	urlBar := &dom.TextNode{}
+	stateText := &dom.TextNode{}
+	errorText := &dom.TextNode{}
 	chromeGroup := &dom.GroupNode{
 		TextNode: []*dom.TextNode{
 			urlBar,
-			textTest,
+			stateText,
+			errorText,
 		},
 		CircleNode: []*dom.CircleNode{backButton},
 		RectNode:   []*dom.RectNode{},
@@ -54,9 +55,10 @@ func NewBrowser(window *pixelgl.Window, initialURL string) *Browser {
 		urlBar:         urlBar,
 		backButton:     backButton,
 		backgroundRect: backgroundRect,
-		chromeRenderer: NewContentRenderer(chromeGroup),
+		stateText:      stateText,
+		errorText:      errorText,
 
-		textTest: textTest,
+		chromeContentRenderer: NewContentRenderer(chromeGroup),
 	}
 	b.NavigateTo(initialURL)
 	return b
@@ -83,15 +85,22 @@ func (b *Browser) DrawChrome(t pixel.Target) {
 	b.backgroundRect.Height = 30
 
 	// Update URL bar.
-
-	str := fmt.Sprintf("%s | %s", StateNames[b.currentPage.state], b.newURL)
-	if b.currentPage.state == PageStateError {
-		str = fmt.Sprintf("%s | %s", str, b.currentPage.loadError.Error())
+	urlToShow := b.newURL
+	if urlToShow != b.currentPage.url {
+		b.urlBar.Fill = "blue"
+	} else {
+		b.urlBar.Fill = "black"
 	}
-
-	b.urlBar.Value = str
-	b.urlBar.X = 35
+	b.urlBar.Value = urlToShow
+	b.urlBar.X = 90
 	b.urlBar.Y = b.window.Bounds().H() - 20
+
+	// Update status text.
+	b.stateText.Value = StateNames[b.currentPage.state]
+	b.stateText.X = 35
+	b.stateText.Y = b.window.Bounds().H() - 20
+
+	// Update error text.
 
 	// Update back button.
 	if len(b.history) > 1 {
@@ -102,14 +111,14 @@ func (b *Browser) DrawChrome(t pixel.Target) {
 	b.backButton.X = 20
 	b.backButton.Y = b.window.Bounds().H() - 15
 
-	b.chromeRenderer.Draw(t)
+	b.chromeContentRenderer.Draw(t)
 }
 
 func (b *Browser) ProcessMouseEvents(pt pixel.Vec, mouseDown bool, mouseJustDown bool) {
 	b.currentPage.mu.RLock()
 	defer b.currentPage.mu.RUnlock()
 
-	clickedNodes := b.chromeRenderer.processClickState(pt, mouseDown, mouseJustDown)
+	clickedNodes := b.chromeContentRenderer.processClickState(pt, mouseDown, mouseJustDown)
 	if len(clickedNodes) > 0 && clickedNodes[0] == b.backButton {
 		if len(b.history) > 1 && b.currentPage.state != PageStateLoading {
 			b.NavigateBack()
@@ -136,6 +145,10 @@ func (b *Browser) Backspace() {
 
 func (b *Browser) NavigateToNewURL() {
 	b.NavigateTo(b.newURL)
+}
+
+func (b *Browser) ToggleURLFocus() {
+	b.urlBarFocused = !b.urlBarFocused
 }
 
 func (b *Browser) NavigateTo(url string) {

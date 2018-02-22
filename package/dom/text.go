@@ -15,6 +15,7 @@ type TextNode struct {
 	Value string  `xml:"value,attr"`
 	X     float64 `xml:"x,attr"`
 	Y     float64 `xml:"y,attr"`
+	Fill  string  `xml:"fill,attr"`
 
 	txt *text.Text
 }
@@ -29,6 +30,7 @@ func (tn *TextNode) Attrs() map[string]string {
 		"value": tn.Value,
 		"x":     strconv.FormatFloat(tn.X, 'f', 2, 64),
 		"y":     strconv.FormatFloat(tn.Y, 'f', 2, 64),
+		"fill":  tn.Fill,
 	}
 }
 
@@ -37,7 +39,12 @@ func (tn *TextNode) Init() {
 }
 
 func (tn *TextNode) Draw(t pixel.Target) {
-	tn.txt.Color = colornames.Black // TODO: set color as attribute
+	color, ok := colornames.Map[tn.Fill]
+	if ok {
+		tn.txt.Color = color
+	} else {
+		tn.txt.Color = colornames.Black
+	}
 	tn.txt.Clear()
 	tn.txt.WriteString(tn.Value)
 	tn.txt.Draw(t, pixel.IM.Moved(pixel.V(tn.X, tn.Y)))
