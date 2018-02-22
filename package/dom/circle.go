@@ -20,6 +20,7 @@ type CircleNode struct {
 
 var _ Node = &CircleNode{}
 
+func (cn *CircleNode) Init()            {}
 func (cn *CircleNode) Name() string     { return "circle" }
 func (cn *CircleNode) Children() []Node { return []Node{} }
 

@@ -26,6 +26,7 @@ func NewBrowser(window *pixelgl.Window, currentPage *BrowserPage) *Browser {
 		window:      window,
 		urlBar:      &dom.TextNode{},
 	}
+	b.urlBar.Init()
 	b.currentPage.Load()
 	return b
 }
@@ -134,6 +135,7 @@ func (bp *BrowserPage) doLoad() {
 	}
 	bp.rootNode = node
 	log.Println("rootNode:", dom.Format(bp.rootNode))
+	bp.rootNode.Init()
 }
 
 func (bp *BrowserPage) Draw(t pixel.Target) {
@@ -156,7 +158,7 @@ func (bp *BrowserPage) Draw(t pixel.Target) {
 func (bp *BrowserPage) ProcessMouseEvents(pt pixel.Vec) {
 	node := bp.GetHoveredNode(pt)
 	if node != nil {
-		log.Println("hovering over", node)
+		log.Println("hovering over", dom.Format(node))
 	}
 }
 

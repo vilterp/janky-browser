@@ -15,22 +15,11 @@ type TextNode struct {
 	Value string  `xml:"value,attr"`
 	X     float64 `xml:"x,attr"`
 	Y     float64 `xml:"y,attr"`
+
+	txt *text.Text
 }
 
 var _ Node = &TextNode{}
-
-var Atlas *text.Atlas
-
-func init() {
-	//fontName := "Roboto-Regular.ttf"
-	//face, err := LoadTTF(fontName, 15)
-	//if err != nil {
-	//	panic(err)
-	//}
-	//Atlas = text.NewAtlas(face, text.ASCII)
-	//log.Println("loaded font ")
-	Atlas = text.Atlas7x13
-}
 
 func (tn *TextNode) Name() string     { return "text" }
 func (tn *TextNode) Children() []Node { return []Node{} }
@@ -43,15 +32,32 @@ func (tn *TextNode) Attrs() map[string]string {
 	}
 }
 
+func (tn *TextNode) Init() {
+	tn.txt = text.New(pixel.V(0, 0), Atlas)
+}
+
 func (tn *TextNode) Draw(t pixel.Target) {
-	//txt := text.New(pixel.V(tn.X, tn.Y), atlas)
-	txt := text.New(pixel.V(0, 0), Atlas)
-	txt.Color = colornames.Black // TODO: set color as attribute
-	txt.Clear()
-	txt.WriteString(tn.Value)
-	txt.Draw(t, pixel.IM.Moved(pixel.V(tn.X, tn.Y)))
+	tn.txt.Color = colornames.Black // TODO: set color as attribute
+	tn.txt.Clear()
+	tn.txt.WriteString(tn.Value)
+	tn.txt.Draw(t, pixel.IM.Moved(pixel.V(tn.X, tn.Y)))
 }
 
 func (tn *TextNode) Contains(pt pixel.Vec) bool {
-	return false
+	txtBounds := tn.txt.Bounds()
+	movedBounds := txtBounds.Moved(pixel.V(tn.X, tn.Y))
+	return movedBounds.Contains(pt)
+}
+
+var Atlas *text.Atlas
+
+func init() {
+	//fontName := "Roboto-Regular.ttf"
+	//face, err := LoadTTF(fontName, 15)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//Atlas = text.NewAtlas(face, text.ASCII)
+	//log.Println("loaded font ")
+	Atlas = text.Atlas7x13
 }

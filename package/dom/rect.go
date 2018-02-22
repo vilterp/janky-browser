@@ -21,6 +21,7 @@ type RectNode struct {
 
 var _ Node = &RectNode{}
 
+func (rn *RectNode) Init()            {}
 func (rn *RectNode) Name() string     { return "rect" }
 func (rn *RectNode) Children() []Node { return []Node{} }
 

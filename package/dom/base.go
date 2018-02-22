@@ -9,6 +9,7 @@ type Node interface {
 	Attrs() map[string]string
 	Children() []Node
 
+	Init()
 	Draw(target pixel.Target)
 	Contains(pixel.Vec) bool
 }
