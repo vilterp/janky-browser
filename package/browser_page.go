@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"reflect"
 	"sync"
 
 	"github.com/faiface/pixel"
@@ -33,12 +32,9 @@ type BrowserPage struct {
 
 	url       string
 	state     PageState
-	loadError error    // set when state = PageStateError
-	rootNode  dom.Node // set when state = PageStateLoaded
+	loadError error // set when state = PageStateError
 
-	// the set of nodes the mouse was over when it was pressed.
-	// empty if the mouse has not been pressed.
-	mouseDownNodes []dom.Node
+	renderer *ContentRenderer
 }
 
 func NewBrowserPage(url string) *BrowserPage {
@@ -96,9 +92,8 @@ func (bp *BrowserPage) doLoad() {
 	if node == nil {
 		node = &dom.GroupNode{}
 	}
-	bp.rootNode = node
-	log.Println("parsed DOM tree:", dom.Format(bp.rootNode))
-	bp.rootNode.Init()
+	bp.renderer = NewContentRenderer(node)
+	log.Println("parsed DOM tree:", dom.Format(bp.renderer.rootNode))
 }
 
 func (bp *BrowserPage) Draw(t pixel.Target) {
@@ -111,7 +106,7 @@ func (bp *BrowserPage) Draw(t pixel.Target) {
 	case PageStateLoading:
 		break
 	case PageStateLoaded:
-		bp.rootNode.Draw(t)
+		bp.renderer.Draw(t)
 	case PageStateError:
 		// TODO: render error state
 		// make a <text> element and an error DOM and use it!
@@ -119,7 +114,14 @@ func (bp *BrowserPage) Draw(t pixel.Target) {
 }
 
 func (bp *BrowserPage) ProcessMouseEvents(pt pixel.Vec, mouseDown bool, mouseJustDown bool) string {
-	clickedNodes := bp.processClickState(pt, mouseDown, mouseJustDown)
+	if bp.state != PageStateLoaded {
+		return ""
+	}
+
+	bp.mu.RLock()
+	defer bp.mu.RUnlock()
+
+	clickedNodes := bp.renderer.processClickState(pt, mouseDown, mouseJustDown)
 
 	var navigateTo string
 	if len(clickedNodes) > 0 {
@@ -137,35 +139,4 @@ func (bp *BrowserPage) ProcessMouseEvents(pt pixel.Vec, mouseDown bool, mouseJus
 		}
 	}
 	return navigateTo
-}
-
-// processClickState steps the click state machine, returning clicked nodes if there are any.
-func (bp *BrowserPage) processClickState(
-	pt pixel.Vec, mouseDown bool, mouseJustDown bool,
-) []dom.Node {
-	var res []dom.Node
-	hoveredNodes := bp.GetHoveredNodes(pt)
-
-	if mouseJustDown {
-		log.Println("begin click on", hoveredNodes)
-		bp.mouseDownNodes = hoveredNodes
-	} else if !mouseDown && len(bp.mouseDownNodes) > 0 {
-		if reflect.DeepEqual(hoveredNodes, bp.mouseDownNodes) {
-			log.Println("clicked on", bp.mouseDownNodes)
-			res = bp.mouseDownNodes
-		}
-		bp.mouseDownNodes = nil
-	}
-	return res
-}
-
-func (bp *BrowserPage) GetHoveredNodes(pt pixel.Vec) []dom.Node {
-	switch bp.state {
-	case PageStateLoaded:
-		bp.mu.RLock()
-		defer bp.mu.RUnlock()
-		return dom.Pick(bp.rootNode, pt)
-	default:
-		return nil
-	}
 }

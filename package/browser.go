@@ -15,21 +15,30 @@ type Browser struct {
 
 	history []string
 
-	// Text for drawing URL
-	backButton *dom.CircleNode
-	urlBar     *dom.TextNode
+	// Stuff for drawing the chrome.
+	chromeRenderer *ContentRenderer
+	backButton     *dom.CircleNode
+	urlBar         *dom.TextNode
 }
 
 func NewBrowser(window *pixelgl.Window, initialURL string) *Browser {
+	backButton := &dom.CircleNode{
+		Radius: 7,
+		Fill:   "blue",
+	}
+	urlBar := &dom.TextNode{}
+	chromeGroup := &dom.GroupNode{
+		TextNode:   []*dom.TextNode{urlBar},
+		CircleNode: []*dom.CircleNode{backButton},
+	}
+
 	b := &Browser{
 		window: window,
-		urlBar: &dom.TextNode{},
-		backButton: &dom.CircleNode{
-			Radius: 7,
-			Fill:   "blue",
-		},
+
+		urlBar:         urlBar,
+		backButton:     backButton,
+		chromeRenderer: NewContentRenderer(chromeGroup),
 	}
-	b.urlBar.Init()
 	b.NavigateTo(initialURL)
 	return b
 }
@@ -46,18 +55,19 @@ func (b *Browser) Draw(t pixel.Target) {
 // and emits its own events... once we have those concepts...
 func (b *Browser) DrawChrome(t pixel.Target) {
 	b.currentPage.mu.RLock()
+	defer b.currentPage.mu.RUnlock()
+
+	// Update URL bar.
 	str := fmt.Sprintf("%s | %s", StateNames[b.currentPage.state], b.currentPage.url)
 	if b.currentPage.state == PageStateError {
 		str = fmt.Sprintf("%s | %s", str, b.currentPage.loadError.Error())
 	}
-	b.currentPage.mu.RUnlock()
 
 	b.urlBar.Value = str
 	b.urlBar.X = 35
 	b.urlBar.Y = b.window.Bounds().H() - 20
-	b.urlBar.Draw(t)
 
-	// Draw back button.
+	// Update back button.
 	if len(b.history) > 1 {
 		b.backButton.Fill = "lightblue"
 	} else {
@@ -65,16 +75,20 @@ func (b *Browser) DrawChrome(t pixel.Target) {
 	}
 	b.backButton.X = 20
 	b.backButton.Y = b.window.Bounds().H() - 15
-	b.backButton.Draw(t)
+
+	b.chromeRenderer.Draw(t)
 }
 
 func (b *Browser) ProcessMouseEvents(pt pixel.Vec, mouseDown bool, mouseJustDown bool) {
 	b.currentPage.mu.RLock()
 	defer b.currentPage.mu.RUnlock()
 
-	if len(b.history) > 1 && b.currentPage.state != PageStateLoading && b.backButton.Contains(pt) {
-		b.NavigateBack()
-		return
+	clickedNodes := b.chromeRenderer.processClickState(pt, mouseDown, mouseJustDown)
+	if len(clickedNodes) > 0 && clickedNodes[0] == b.backButton {
+		if len(b.history) > 1 && b.currentPage.state != PageStateLoading {
+			b.NavigateBack()
+			return
+		}
 	}
 
 	navigateTo := b.currentPage.ProcessMouseEvents(pt, mouseDown, mouseJustDown)
