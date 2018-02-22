@@ -20,7 +20,9 @@ type CircleNode struct {
 
 var _ DOMNode = &CircleNode{}
 
-func (cn *CircleNode) Name() string { return "circle" }
+func (cn *CircleNode) Name() string        { return "circle" }
+func (cn *CircleNode) Children() []DOMNode { return []DOMNode{} }
+
 func (cn *CircleNode) Attrs() map[string]string {
 	return map[string]string{
 		"radius": strconv.FormatFloat(cn.Radius, 'f', 2, 64),
@@ -29,9 +31,7 @@ func (cn *CircleNode) Attrs() map[string]string {
 		"fill":   cn.Fill,
 	}
 }
-func (cn *CircleNode) Children() []DOMNode {
-	return []DOMNode{}
-}
+
 func (cn *CircleNode) Draw(t pixel.Target) {
 	imd := imdraw.New(nil)
 
@@ -46,4 +46,10 @@ func (cn *CircleNode) Draw(t pixel.Target) {
 	// TODO: support stroke as well
 
 	imd.Draw(t)
+}
+
+func (cn *CircleNode) Contains(pt pixel.Vec) bool {
+	center := pixel.V(cn.X, cn.Y)
+	diff := pt.Sub(center)
+	return diff.Len() <= cn.Radius
 }

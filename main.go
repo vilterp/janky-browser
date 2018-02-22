@@ -29,6 +29,10 @@ func run() {
 	for !win.Closed() {
 		win.Clear(colornames.White)
 
+		browser.ProcessMouseEvents(win.MousePosition())
+		// TODO: handle clicks, not just position
+		// TODO: handle keyboard events
+
 		browser.Draw(win)
 		win.Update()
 

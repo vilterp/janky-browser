@@ -13,6 +13,7 @@ type DOMNode interface {
 	Children() []DOMNode
 
 	Draw(target pixel.Target)
+	Contains(pixel.Vec) bool
 }
 
 func colorToString(c color.Color) string {

@@ -22,6 +22,7 @@ var _ DOMNode = &GroupNode{}
 
 func (gn *GroupNode) Name() string             { return "g" }
 func (gn *GroupNode) Attrs() map[string]string { return make(map[string]string) }
+
 func (gn *GroupNode) Children() []DOMNode {
 	var ret []DOMNode
 	for _, rect := range gn.RectNode {
@@ -40,4 +41,8 @@ func (gn *GroupNode) Draw(t pixel.Target) {
 		// TODO: draw witn transform
 		child.Draw(t)
 	}
+}
+
+func (gn *GroupNode) Contains(_ pixel.Vec) bool {
+	return false
 }

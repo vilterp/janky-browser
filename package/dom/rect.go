@@ -21,7 +21,9 @@ type RectNode struct {
 
 var _ DOMNode = &RectNode{}
 
-func (rn *RectNode) Name() string { return "rect" }
+func (rn *RectNode) Name() string        { return "rect" }
+func (rn *RectNode) Children() []DOMNode { return []DOMNode{} }
+
 func (rn *RectNode) Attrs() map[string]string {
 	return map[string]string{
 		"x":      strconv.FormatFloat(rn.X, 'f', 2, 64),
@@ -31,9 +33,7 @@ func (rn *RectNode) Attrs() map[string]string {
 		"fill":   rn.Fill,
 	}
 }
-func (rn *RectNode) Children() []DOMNode {
-	return []DOMNode{}
-}
+
 func (rn *RectNode) Draw(t pixel.Target) {
 	imd := imdraw.New(nil)
 
@@ -49,4 +49,9 @@ func (rn *RectNode) Draw(t pixel.Target) {
 	// TODO: stroke
 
 	imd.Draw(t)
+}
+
+func (rn *RectNode) Contains(pt pixel.Vec) bool {
+	rect := pixel.R(rn.X, rn.Y, rn.X+rn.Width, rn.Y+rn.Height)
+	return rect.Contains(pt)
 }

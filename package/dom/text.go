@@ -34,6 +34,7 @@ func init() {
 
 func (tn *TextNode) Name() string        { return "text" }
 func (tn *TextNode) Children() []DOMNode { return []DOMNode{} }
+
 func (tn *TextNode) Attrs() map[string]string {
 	return map[string]string{
 		"value": tn.Value,
@@ -41,6 +42,7 @@ func (tn *TextNode) Attrs() map[string]string {
 		"y":     strconv.FormatFloat(tn.Y, 'f', 2, 64),
 	}
 }
+
 func (tn *TextNode) Draw(t pixel.Target) {
 	//txt := text.New(pixel.V(tn.X, tn.Y), atlas)
 	txt := text.New(pixel.V(0, 0), Atlas)
@@ -48,4 +50,8 @@ func (tn *TextNode) Draw(t pixel.Target) {
 	txt.Clear()
 	txt.WriteString(tn.Value)
 	txt.Draw(t, pixel.IM.Moved(pixel.V(tn.X, tn.Y)))
+}
+
+func (tn *TextNode) Contains(pt pixel.Vec) bool {
+	return false
 }

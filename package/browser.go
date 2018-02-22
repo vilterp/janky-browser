@@ -48,6 +48,10 @@ func (b *Browser) Draw(t pixel.Target) {
 	b.currentPage.Draw(t)
 }
 
+func (b *Browser) ProcessMouseEvents(pt pixel.Vec) {
+	b.currentPage.ProcessMouseEvents(pt)
+}
+
 type PageState = int
 
 const (
@@ -146,5 +150,23 @@ func (bp *BrowserPage) Draw(t pixel.Target) {
 	case PageStateError:
 		// TODO: render error state
 		// make a <text> element and an error DOM and use it!
+	}
+}
+
+func (bp *BrowserPage) ProcessMouseEvents(pt pixel.Vec) {
+	node := bp.GetHoveredNode(pt)
+	if node != nil {
+		log.Println("hovering over", node)
+	}
+}
+
+func (bp *BrowserPage) GetHoveredNode(pt pixel.Vec) dom.DOMNode {
+	switch bp.state {
+	case PageStateLoaded:
+		bp.mu.RLock()
+		defer bp.mu.RUnlock()
+		return dom.Pick(bp.rootNode, pt)
+	default:
+		return nil
 	}
 }
