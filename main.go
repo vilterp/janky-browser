@@ -9,7 +9,7 @@ import (
 	"golang.org/x/image/colornames"
 )
 
-const initPage = "http://localhost:8081/justText.svg"
+const initPage = "http://localhost:8081/circleAndRect.svg"
 
 func run() {
 	cfg := pixelgl.WindowConfig{

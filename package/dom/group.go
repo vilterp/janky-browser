@@ -9,8 +9,8 @@ import (
 type GroupNode struct {
 	XMLName xml.Name `xml:"g"`
 
-	Rect   []RectNode
-	Circle []CircleNode
+	RectNode   []RectNode   `xml:"rect"`
+	CircleNode []CircleNode `xml:"circle"`
 	//
 	//children []DOMNode
 }
@@ -21,10 +21,10 @@ func (gn *GroupNode) Name() string             { return "g" }
 func (gn *GroupNode) Attrs() map[string]string { return make(map[string]string) }
 func (gn *GroupNode) Children() []DOMNode {
 	var ret []DOMNode
-	for _, rect := range gn.Rect {
+	for _, rect := range gn.RectNode {
 		ret = append(ret, &rect)
 	}
-	for _, circle := range gn.Circle {
+	for _, circle := range gn.CircleNode {
 		ret = append(ret, &circle)
 	}
 	return ret

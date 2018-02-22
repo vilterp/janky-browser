@@ -7,15 +7,16 @@ import (
 
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
+	"golang.org/x/image/colornames"
 )
 
 type RectNode struct {
 	XMLName xml.Name `xml:"rect"`
 
-	x      float64
-	y      float64
-	width  float64
-	height float64
+	X      float64 `xml:"x,attr"`
+	Y      float64 `xml:"y,attr"`
+	Width  float64 `xml:"width,attr"`
+	Height float64 `xml:"height,attr"`
 	fill   color.Color
 }
 
@@ -23,13 +24,16 @@ var _ DOMNode = &RectNode{}
 
 func (rn *RectNode) Name() string { return "rect" }
 func (rn *RectNode) Attrs() map[string]string {
-	return map[string]string{
-		"x":      strconv.FormatFloat(rn.x, 'f', 2, 64),
-		"y":      strconv.FormatFloat(rn.y, 'f', 2, 64),
-		"width":  strconv.FormatFloat(rn.width, 'f', 2, 64),
-		"height": strconv.FormatFloat(rn.height, 'f', 2, 64),
-		"fill":   colorToString(rn.fill),
+	m := map[string]string{
+		"x":      strconv.FormatFloat(rn.X, 'f', 2, 64),
+		"y":      strconv.FormatFloat(rn.Y, 'f', 2, 64),
+		"width":  strconv.FormatFloat(rn.Width, 'f', 2, 64),
+		"height": strconv.FormatFloat(rn.Height, 'f', 2, 64),
 	}
+	if rn.fill != nil {
+		m["fill"] = colorToString(rn.fill)
+	}
+	return m
 }
 func (rn *RectNode) Children() []DOMNode {
 	return []DOMNode{}
@@ -37,9 +41,13 @@ func (rn *RectNode) Children() []DOMNode {
 func (rn *RectNode) Draw(t pixel.Target) {
 	imd := imdraw.New(nil)
 
-	imd.Color = rn.fill
-	imd.Push(pixel.V(rn.x, rn.y))
-	imd.Push(pixel.V(rn.x+rn.width, rn.y+rn.height))
+	if rn.fill != nil {
+		imd.Color = rn.fill
+	} else {
+		imd.Color = colornames.Black
+	}
+	imd.Push(pixel.V(rn.X, rn.Y))
+	imd.Push(pixel.V(rn.X+rn.Width, rn.Y+rn.Height))
 	imd.Rectangle(0)
 	// TODO: stroke
 

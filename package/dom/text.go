@@ -2,7 +2,6 @@ package dom
 
 import (
 	"encoding/xml"
-	"log"
 	"strconv"
 
 	"github.com/faiface/pixel"
@@ -23,13 +22,14 @@ var _ DOMNode = &TextNode{}
 var Atlas *text.Atlas
 
 func init() {
-	fontName := "Roboto-Regular.ttf"
-	face, err := LoadTTF(fontName, 15)
-	if err != nil {
-		panic(err)
-	}
-	Atlas = text.NewAtlas(face, text.ASCII)
-	log.Println("loaded font ")
+	//fontName := "Roboto-Regular.ttf"
+	//face, err := LoadTTF(fontName, 15)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//Atlas = text.NewAtlas(face, text.ASCII)
+	//log.Println("loaded font ")
+	Atlas = text.Atlas7x13
 }
 
 func (tn *TextNode) Name() string        { return "text" }

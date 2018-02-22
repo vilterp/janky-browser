@@ -36,7 +36,7 @@ func doFormat(node DOMNode, indent int) string {
 }
 
 func Parse(data []byte) (DOMNode, error) {
-	g := TextNode{}
+	g := GroupNode{}
 	err := xml.Unmarshal(data, &g)
 	if err != nil {
 		return nil, err

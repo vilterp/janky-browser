@@ -2,31 +2,28 @@ package dom
 
 import (
 	"testing"
-
-	"golang.org/x/image/colornames"
 )
 
-const circleAndRectSource = `<g>
-  <rect fill="rgba(0, 0, 65535, 65535)" height="10.00" width="5.00" x="2.00" y="3.00" />
-  <circle fill="rgba(65535, 0, 0, 65535)" radius="5.00" x="2.00" y="3.00" />
+const circleAndRectSource = `
+<g>
+  <rect height="10.00" width="5.00" x="2.00" y="3.00" />
+  <circle radius="5.00" x="2.00" y="3.00" />
 </g>`
 
 var circleAndRect = &GroupNode{
-	Circle: []CircleNode{
+	CircleNode: []CircleNode{
 		{
-			Fill:   colornames.Red,
 			Radius: 5,
 			X:      2,
 			Y:      3,
 		},
 	},
-	Rect: []RectNode{
+	RectNode: []RectNode{
 		{
-			fill:   colornames.Blue,
-			x:      2,
-			y:      3,
-			width:  5,
-			height: 10,
+			X:      2,
+			Y:      3,
+			Width:  5,
+			Height: 10,
 		},
 	},
 }
@@ -41,18 +38,13 @@ func TestDOMFormat(t *testing.T) {
 }
 
 func TestDOMParse(t *testing.T) {
-	//source := circleAndRectSource
-	source := `<circle radius="10" x="11" y="12" />`
+	source := circleAndRectSource
 	parsed, err := Parse([]byte(source))
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Log(parsed)
-	expected := &CircleNode{
-		Radius: 10,
-		X:      11,
-		Y:      12,
-	}
+	expected := circleAndRect
 	if parsed == nil {
 		t.Fatalf("expected:\n%s\ngot nil", Format(expected))
 	}
