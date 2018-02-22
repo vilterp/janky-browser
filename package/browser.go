@@ -18,14 +18,18 @@ type Browser struct {
 	newURL string
 
 	// Stuff for drawing the chrome.
+	// TODO: wrap this up in its own struct somehow.
 	chromeContentRenderer *ContentRenderer
-	backgroundRect        *dom.RectNode
-	backButton            *dom.CircleNode
-	urlBar                *dom.TextNode
-	stateText             *dom.TextNode
-	errorText             *dom.TextNode
+
+	backgroundRect *dom.RectNode
+	backButton     *dom.CircleNode
+	urlBar         *dom.TextNode
+	urlCursor      *dom.LineNode
+	stateText      *dom.TextNode
+	errorText      *dom.TextNode
 
 	urlBarFocused bool
+	cursorPos     int
 }
 
 func NewBrowser(window *pixelgl.Window, initialURL string) *Browser {
@@ -36,6 +40,7 @@ func NewBrowser(window *pixelgl.Window, initialURL string) *Browser {
 	urlBar := &dom.TextNode{}
 	stateText := &dom.TextNode{}
 	errorText := &dom.TextNode{}
+	urlCursor := &dom.LineNode{}
 	chromeGroup := &dom.GroupNode{
 		TextNode: []*dom.TextNode{
 			urlBar,
@@ -46,12 +51,16 @@ func NewBrowser(window *pixelgl.Window, initialURL string) *Browser {
 		RectNode: []*dom.RectNode{
 			backgroundRect,
 		},
+		LineNode: []*dom.LineNode{
+			urlCursor,
+		},
 	}
 
 	b := &Browser{
 		window: window,
 
 		urlBar:         urlBar,
+		urlCursor:      urlCursor,
 		backButton:     backButton,
 		backgroundRect: backgroundRect,
 		stateText:      stateText,
@@ -101,6 +110,19 @@ func (b *Browser) DrawChrome(t pixel.Target) {
 	b.urlBar.X = urlBarStart
 	b.urlBar.Y = b.window.Bounds().H() - 20
 
+	// Update cursor.
+	const charWidth = float64(7)
+	cursorX := float64(b.cursorPos)*charWidth + urlBarStart
+	b.urlCursor.X1 = cursorX
+	b.urlCursor.X2 = cursorX
+	b.urlCursor.Y1 = b.window.Bounds().H() - 8
+	b.urlCursor.Y2 = b.window.Bounds().H() - 22
+	if b.urlBarFocused {
+		b.urlCursor.Stroke = "red"
+	} else {
+		b.urlCursor.Stroke = ""
+	}
+
 	// Update status text.
 	b.stateText.Value = StateNames[b.currentPage.state]
 	b.stateText.X = 35
@@ -149,7 +171,8 @@ func (b *Browser) ProcessTyping(t string) {
 	if !b.urlBarFocused {
 		return
 	}
-	b.newURL += t
+	b.newURL = b.newURL[:b.cursorPos] + t + b.newURL[b.cursorPos:]
+	b.cursorPos += 1
 }
 
 func (b *Browser) ProcessBackspace() {
@@ -159,7 +182,8 @@ func (b *Browser) ProcessBackspace() {
 	if b.newURL == "" {
 		return
 	}
-	b.newURL = b.newURL[:len(b.newURL)-1]
+	b.newURL = b.newURL[:b.cursorPos-1] + b.newURL[b.cursorPos:]
+	b.cursorPos -= 1
 }
 
 func (b *Browser) ProcessEnter() {
@@ -172,10 +196,31 @@ func (b *Browser) ProcessEnter() {
 
 func (b *Browser) FocusURLBar() {
 	b.urlBarFocused = true
+	b.cursorPos = len(b.newURL)
 }
 
 func (b *Browser) UnFocusURLBar() {
 	b.urlBarFocused = false
+}
+
+func (b *Browser) ProcessLeftKey() {
+	if !b.urlBarFocused {
+		return
+	}
+	b.cursorPos = b.cursorPos - 1
+	if b.cursorPos < 0 {
+		b.cursorPos = 0
+	}
+}
+
+func (b *Browser) ProcessRightKey() {
+	if !b.urlBarFocused {
+		return
+	}
+	b.cursorPos = b.cursorPos + 1
+	if b.cursorPos > len(b.newURL) {
+		b.cursorPos = len(b.newURL)
+	}
 }
 
 func (b *Browser) NavigateTo(url string) {

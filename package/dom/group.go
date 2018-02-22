@@ -17,6 +17,7 @@ type GroupNode struct {
 	CircleNode []*CircleNode `xml:"circle"`
 	TextNode   []*TextNode   `xml:"text"`
 	GroupNode  []*GroupNode  `xml:"g"`
+	LineNode   []*LineNode   `xml:"line"`
 	//
 	//children []Node
 }
@@ -45,6 +46,9 @@ func (gn *GroupNode) Children() []Node {
 	}
 	for _, group := range gn.GroupNode {
 		ret = append(ret, group)
+	}
+	for _, line := range gn.LineNode {
+		ret = append(ret, line)
 	}
 	return ret
 }

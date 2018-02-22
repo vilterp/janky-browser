@@ -40,17 +40,23 @@ func run() {
 			log.Println("typed", typed)
 			browser.ProcessTyping(typed)
 		}
-		if win.JustReleased(pixelgl.KeyBackspace) {
+		if win.JustReleased(pixelgl.KeyBackspace) || win.Repeated(pixelgl.KeyBackspace) {
 			browser.ProcessBackspace()
 		}
 		if win.JustReleased(pixelgl.KeyEnter) {
 			browser.ProcessEnter()
 		}
-		if win.JustReleased(pixelgl.KeyL) && win.Pressed(pixelgl.KeyLeftSuper) {
+		if win.JustReleased(pixelgl.KeyL) && (win.Pressed(pixelgl.KeyLeftSuper) || win.Pressed(pixelgl.KeyRightSuper)) {
 			browser.FocusURLBar()
 		}
 		if win.JustReleased(pixelgl.KeyTab) || win.JustReleased(pixelgl.KeyEscape) {
 			browser.UnFocusURLBar()
+		}
+		if win.JustPressed(pixelgl.KeyLeft) || win.Repeated(pixelgl.KeyLeft) {
+			browser.ProcessLeftKey()
+		}
+		if win.JustPressed(pixelgl.KeyRight) || win.Repeated(pixelgl.KeyRight) {
+			browser.ProcessRightKey()
 		}
 
 		// TODO: handle clicks, not just position
