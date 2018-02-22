@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"time"
 
 	"github.com/faiface/pixel"
@@ -33,6 +34,19 @@ func run() {
 			win.Pressed(pixelgl.MouseButton1),
 			win.JustPressed(pixelgl.MouseButton1),
 		)
+
+		typed := win.Typed()
+		if len(typed) > 0 {
+			log.Println("typed", typed)
+			browser.AddText(typed)
+		}
+		if win.JustReleased(pixelgl.KeyBackspace) {
+			browser.Backspace()
+		}
+		if win.JustReleased(pixelgl.KeyEnter) {
+			browser.NavigateToNewURL()
+		}
+
 		// TODO: handle clicks, not just position
 		// TODO: handle keyboard events
 

@@ -15,10 +15,15 @@ type Browser struct {
 
 	history []string
 
+	newURL string
+
 	// Stuff for drawing the chrome.
 	chromeRenderer *ContentRenderer
+	backgroundRect *dom.RectNode
 	backButton     *dom.CircleNode
 	urlBar         *dom.TextNode
+
+	textTest *dom.TextNode
 }
 
 func NewBrowser(window *pixelgl.Window, initialURL string) *Browser {
@@ -26,10 +31,21 @@ func NewBrowser(window *pixelgl.Window, initialURL string) *Browser {
 		Radius: 7,
 		Fill:   "blue",
 	}
+	backgroundRect := &dom.RectNode{
+		Fill: "lightgrey",
+	}
+	textTest := &dom.TextNode{
+		X: 300,
+		Y: 200,
+	}
 	urlBar := &dom.TextNode{}
 	chromeGroup := &dom.GroupNode{
-		TextNode:   []*dom.TextNode{urlBar},
+		TextNode: []*dom.TextNode{
+			urlBar,
+			textTest,
+		},
 		CircleNode: []*dom.CircleNode{backButton},
+		RectNode:   []*dom.RectNode{},
 	}
 
 	b := &Browser{
@@ -37,7 +53,10 @@ func NewBrowser(window *pixelgl.Window, initialURL string) *Browser {
 
 		urlBar:         urlBar,
 		backButton:     backButton,
+		backgroundRect: backgroundRect,
 		chromeRenderer: NewContentRenderer(chromeGroup),
+
+		textTest: textTest,
 	}
 	b.NavigateTo(initialURL)
 	return b
@@ -57,8 +76,15 @@ func (b *Browser) DrawChrome(t pixel.Target) {
 	b.currentPage.mu.RLock()
 	defer b.currentPage.mu.RUnlock()
 
+	// Update background rect.
+	b.backgroundRect.Width = b.window.Bounds().W()
+	b.backgroundRect.X = 0
+	b.backgroundRect.Y = b.window.Bounds().H() - 30
+	b.backgroundRect.Height = 30
+
 	// Update URL bar.
-	str := fmt.Sprintf("%s | %s", StateNames[b.currentPage.state], b.currentPage.url)
+
+	str := fmt.Sprintf("%s | %s", StateNames[b.currentPage.state], b.newURL)
 	if b.currentPage.state == PageStateError {
 		str = fmt.Sprintf("%s | %s", str, b.currentPage.loadError.Error())
 	}
@@ -97,8 +123,24 @@ func (b *Browser) ProcessMouseEvents(pt pixel.Vec, mouseDown bool, mouseJustDown
 	}
 }
 
+func (b *Browser) AddText(t string) {
+	b.newURL += t
+}
+
+func (b *Browser) Backspace() {
+	if b.newURL == "" {
+		return
+	}
+	b.newURL = b.newURL[:len(b.newURL)-1]
+}
+
+func (b *Browser) NavigateToNewURL() {
+	b.NavigateTo(b.newURL)
+}
+
 func (b *Browser) NavigateTo(url string) {
 	log.Println("navigate to", url)
+	b.newURL = url
 	b.currentPage = NewBrowserPage(url)
 	b.currentPage.Load()
 
