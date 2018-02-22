@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"reflect"
 	"sync"
 
 	"github.com/faiface/pixel"
@@ -34,6 +35,10 @@ type BrowserPage struct {
 	state     PageState
 	loadError error    // set when state = PageStateError
 	rootNode  dom.Node // set when state = PageStateLoaded
+
+	// the set of nodes the mouse was over when it was pressed.
+	// empty if the mouse has not been pressed.
+	mouseDownNodes []dom.Node
 }
 
 func NewBrowserPage(url string) *BrowserPage {
@@ -113,15 +118,16 @@ func (bp *BrowserPage) Draw(t pixel.Target) {
 	}
 }
 
-func (bp *BrowserPage) ProcessMouseEvents(pt pixel.Vec) string {
-	hoveredNodes := bp.GetHoveredNodes(pt)
+func (bp *BrowserPage) ProcessMouseEvents(pt pixel.Vec, mouseDown bool, mouseJustDown bool) string {
+	clickedNodes := bp.processClickState(pt, mouseDown, mouseJustDown)
+
 	var navigateTo string
-	if len(hoveredNodes) > 0 {
+	if len(clickedNodes) > 0 {
 		//var hoveredNodeStrs []string
 		//for _, hoveredNode := range hoveredNodes {
 		//	hoveredNodeStrs = append(hoveredNodeStrs, dom.Format(hoveredNode))
 		//}
-		for _, hoveredNode := range hoveredNodes {
+		for _, hoveredNode := range clickedNodes {
 			switch n := hoveredNode.(type) {
 			case *dom.GroupNode:
 				if n.Href != "" {
@@ -131,6 +137,26 @@ func (bp *BrowserPage) ProcessMouseEvents(pt pixel.Vec) string {
 		}
 	}
 	return navigateTo
+}
+
+// processClickState steps the click state machine, returning clicked nodes if there are any.
+func (bp *BrowserPage) processClickState(
+	pt pixel.Vec, mouseDown bool, mouseJustDown bool,
+) []dom.Node {
+	var res []dom.Node
+	hoveredNodes := bp.GetHoveredNodes(pt)
+
+	if mouseJustDown {
+		log.Println("begin click on", hoveredNodes)
+		bp.mouseDownNodes = hoveredNodes
+	} else if !mouseDown && len(bp.mouseDownNodes) > 0 {
+		if reflect.DeepEqual(hoveredNodes, bp.mouseDownNodes) {
+			log.Println("clicked on", bp.mouseDownNodes)
+			res = bp.mouseDownNodes
+		}
+		bp.mouseDownNodes = nil
+	}
+	return res
 }
 
 func (bp *BrowserPage) GetHoveredNodes(pt pixel.Vec) []dom.Node {

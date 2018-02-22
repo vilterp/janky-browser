@@ -68,7 +68,7 @@ func (b *Browser) DrawChrome(t pixel.Target) {
 	b.backButton.Draw(t)
 }
 
-func (b *Browser) ProcessMouseEvents(pt pixel.Vec) {
+func (b *Browser) ProcessMouseEvents(pt pixel.Vec, mouseDown bool, mouseJustDown bool) {
 	b.currentPage.mu.RLock()
 	defer b.currentPage.mu.RUnlock()
 
@@ -77,7 +77,7 @@ func (b *Browser) ProcessMouseEvents(pt pixel.Vec) {
 		return
 	}
 
-	navigateTo := b.currentPage.ProcessMouseEvents(pt)
+	navigateTo := b.currentPage.ProcessMouseEvents(pt, mouseDown, mouseJustDown)
 	if navigateTo != "" {
 		b.NavigateTo(navigateTo)
 	}
