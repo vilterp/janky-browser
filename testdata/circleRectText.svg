@@ -3,7 +3,7 @@
   <g href="http://localhost:8081/justText.svg">
     <text value="Hello world" x="500" y="500" />
   </g>
-  <rect fill="blue" height="100" width="200" x="500" y="600" />
+  <rect fill="blue" stroke="black" height="100" width="200" x="500" y="600" />
   <g href="http://localhost:8081/justCircle.svg">
     <text value="Go to just circle" x="800" y="400" />
   </g>

@@ -17,6 +17,7 @@ type RectNode struct {
 	Width  float64 `xml:"width,attr"`
 	Height float64 `xml:"height,attr"`
 	Fill   string  `xml:"fill,attr"`
+	Stroke string  `xml:"stroke,attr"`
 }
 
 var _ Node = &RectNode{}
@@ -32,22 +33,30 @@ func (rn *RectNode) Attrs() map[string]string {
 		"width":  strconv.FormatFloat(rn.Width, 'f', 2, 64),
 		"height": strconv.FormatFloat(rn.Height, 'f', 2, 64),
 		"fill":   rn.Fill,
+		"stroke": rn.Stroke,
 	}
 }
 
 func (rn *RectNode) Draw(t pixel.Target) {
 	imd := imdraw.New(nil)
 
+	// Draw fill.
 	fillColor, ok := colornames.Map[rn.Fill]
-	if !ok {
-		imd.Color = colornames.Black
-	} else {
+	if ok {
 		imd.Color = fillColor
+		imd.Push(pixel.V(rn.X, rn.Y))
+		imd.Push(pixel.V(rn.X+rn.Width, rn.Y+rn.Height))
+		imd.Rectangle(0)
 	}
-	imd.Push(pixel.V(rn.X, rn.Y))
-	imd.Push(pixel.V(rn.X+rn.Width, rn.Y+rn.Height))
-	imd.Rectangle(0)
-	// TODO: stroke
+
+	// Draw stroke.
+	strokeColor, ok := colornames.Map[rn.Stroke]
+	if ok {
+		imd.Color = strokeColor
+		imd.Push(pixel.V(rn.X, rn.Y))
+		imd.Push(pixel.V(rn.X+rn.Width, rn.Y+rn.Height))
+		imd.Rectangle(2)
+	}
 
 	imd.Draw(t)
 }
