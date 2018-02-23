@@ -3,6 +3,7 @@ package jankybrowser
 import (
 	"fmt"
 	"log"
+	"net/url"
 
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
@@ -14,8 +15,6 @@ type Browser struct {
 	currentPage *BrowserPage
 
 	history []string
-
-	newURL string
 
 	// Stuff for drawing the chrome.
 	// TODO: wrap this up in its own struct somehow.
@@ -135,26 +134,38 @@ func (b *Browser) ProcessMouseEvents(pt pixel.Vec, mouseDown bool, mouseJustDown
 
 	navigateTo := b.currentPage.ProcessMouseEvents(pt, mouseDown, mouseJustDown)
 	if navigateTo != "" {
-		b.NavigateTo(navigateTo)
+		b.NavigateTo(b.resolveURL(navigateTo))
 	}
 }
 
-func (b *Browser) NavigateTo(url string) {
-	log.Println("navigate to", url)
-	b.newURL = url
-	b.currentPage = NewBrowserPage(url)
-	b.currentPage.Load()
-	b.UrlInput.Value = url
+func (b *Browser) resolveURL(unresolvedURL string) string {
+	parsed, err := url.Parse(unresolvedURL)
+	if err != nil {
+		return unresolvedURL
+	}
+	if parsed.Host == "" {
+		currentURL, _ := url.Parse(b.currentPage.url)
+		parsed.Scheme = currentURL.Scheme
+		parsed.Host = currentURL.Host
+	}
+	return parsed.String()
+}
 
-	b.history = append(b.history, url)
+func (b *Browser) NavigateTo(newURL string) {
+	log.Println("navigate to", newURL)
+	b.currentPage = NewBrowserPage(newURL)
+	b.currentPage.Load()
+	b.UrlInput.Value = newURL
+
+	b.history = append(b.history, newURL)
 }
 
 func (b *Browser) NavigateBack() error {
-	url, err := b.PopHistory()
+	toURL, err := b.PopHistory()
 	if err != nil {
 		return err
 	}
-	b.NavigateTo(url)
+	b.NavigateTo(toURL)
 	return nil
 }
 
@@ -163,7 +174,7 @@ func (b *Browser) PopHistory() (string, error) {
 		return "", fmt.Errorf("can't go back; already on last page")
 	}
 
-	url := b.history[len(b.history)-2]
+	popped := b.history[len(b.history)-2]
 	b.history = b.history[:len(b.history)-2]
-	return url, nil
+	return popped, nil
 }
