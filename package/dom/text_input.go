@@ -78,9 +78,9 @@ func (tin *TextInputNode) Draw(t pixel.Target) {
 	tin.backgroundRect.Y = tin.Y
 	tin.backgroundRect.Height = 30
 	if tin.Focused {
-		tin.backgroundRect.Fill = "lightgrey"
+		tin.backgroundRect.Stroke = "black"
 	} else {
-		tin.backgroundRect.Fill = ""
+		tin.backgroundRect.Stroke = ""
 	}
 
 	textStartX := tin.X + 5
@@ -99,7 +99,7 @@ func (tin *TextInputNode) Draw(t pixel.Target) {
 	tin.cursorLine.Y1 = tin.Y + 21
 	tin.cursorLine.Y2 = tin.Y + 7
 	if tin.Focused {
-		tin.cursorLine.Stroke = "red"
+		tin.cursorLine.Stroke = "black"
 	} else {
 		tin.cursorLine.Stroke = ""
 	}

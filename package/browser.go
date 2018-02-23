@@ -23,7 +23,7 @@ type Browser struct {
 
 	UrlInput *dom.TextInputNode
 
-	backButton *dom.CircleNode
+	backButton *dom.TextNode
 	stateText  *dom.TextNode
 	errorText  *dom.TextNode
 }
@@ -31,8 +31,8 @@ type Browser struct {
 func NewBrowser(window *pixelgl.Window, initialURL string) *Browser {
 	// TODO: maybe group chrome stuff into a custom element.
 	// Initialize nodes.
-	backButton := &dom.CircleNode{
-		Radius: 7,
+	backButton := &dom.TextNode{
+		Value: "BACK",
 	}
 	stateText := &dom.TextNode{}
 	errorText := &dom.TextNode{}
@@ -43,8 +43,8 @@ func NewBrowser(window *pixelgl.Window, initialURL string) *Browser {
 		TextNode: []*dom.TextNode{
 			stateText,
 			errorText,
+			backButton,
 		},
-		CircleNode:    []*dom.CircleNode{backButton},
 		TextInputNode: []*dom.TextInputNode{urlInput},
 	}
 
@@ -83,7 +83,7 @@ func (b *Browser) DrawChrome(t pixel.Target) {
 	b.currentPage.mu.RLock()
 	defer b.currentPage.mu.RUnlock()
 
-	const urlBarStart = 85
+	const urlBarStart = 90
 
 	// Update URL input.
 	if b.UrlInput.Value == b.currentPage.url {
@@ -97,8 +97,17 @@ func (b *Browser) DrawChrome(t pixel.Target) {
 
 	// Update status text.
 	b.stateText.Value = StateNames[b.currentPage.state]
-	b.stateText.X = 35
+	b.stateText.X = 45
 	b.stateText.Y = b.window.Bounds().H() - 20
+
+	// Update back button.
+	if len(b.history) > 1 {
+		b.backButton.Fill = "blue"
+	} else {
+		b.backButton.Fill = "grey"
+	}
+	b.backButton.X = 10
+	b.backButton.Y = b.window.Bounds().H() - 20
 
 	// Update error text.
 	errorText := ""
@@ -108,15 +117,6 @@ func (b *Browser) DrawChrome(t pixel.Target) {
 	b.errorText.Value = errorText
 	b.errorText.X = 20
 	b.errorText.Y = b.window.Bounds().H() - 50
-
-	// Update back button.
-	if len(b.history) > 1 {
-		b.backButton.Fill = "lightblue"
-	} else {
-		b.backButton.Fill = "grey"
-	}
-	b.backButton.X = 20
-	b.backButton.Y = b.window.Bounds().H() - 15
 
 	b.chromeContentRenderer.Draw(t)
 }
