@@ -36,27 +36,27 @@ func run() {
 
 		typed := win.Typed()
 		if len(typed) > 0 {
-			browser.ProcessTyping(typed)
+			browser.UrlInput.ProcessTyping(typed)
 		}
 		if win.JustReleased(pixelgl.KeyBackspace) || win.Repeated(pixelgl.KeyBackspace) {
-			browser.ProcessBackspace()
+			browser.UrlInput.ProcessBackspace()
 		}
 		if win.JustReleased(pixelgl.KeyEnter) {
-			browser.ProcessEnter()
+			browser.UrlInput.ProcessEnter()
 		}
 		superDown := win.Pressed(pixelgl.KeyLeftSuper) || win.Pressed(pixelgl.KeyRightSuper)
 		if win.JustReleased(pixelgl.KeyL) && superDown {
-			browser.FocusURLBar()
+			browser.UrlInput.Focus()
 		}
 		if win.JustReleased(pixelgl.KeyTab) || win.JustReleased(pixelgl.KeyEscape) {
-			browser.UnFocusURLBar()
+			browser.UrlInput.UnFocus()
 		}
 		shiftDown := win.Pressed(pixelgl.KeyLeftShift) || win.Pressed(pixelgl.KeyRightShift)
 		if win.JustPressed(pixelgl.KeyLeft) || win.Repeated(pixelgl.KeyLeft) {
-			browser.ProcessLeftKey(shiftDown, superDown)
+			browser.UrlInput.ProcessLeftKey(shiftDown, superDown)
 		}
 		if win.JustPressed(pixelgl.KeyRight) || win.Repeated(pixelgl.KeyRight) {
-			browser.ProcessRightKey(shiftDown, superDown)
+			browser.UrlInput.ProcessRightKey(shiftDown, superDown)
 		}
 
 		// TODO: handle keyboard events

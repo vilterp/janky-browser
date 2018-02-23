@@ -21,14 +21,7 @@ type Browser struct {
 	// TODO: wrap this up in its own struct somehow.
 	chromeContentRenderer *ContentRenderer
 
-	// TODO: factor these out into text field
-	urlBar         *dom.TextNode
-	urlCursor      *dom.LineNode
-	backgroundRect *dom.RectNode
-	selectionRect  *dom.RectNode
-	urlBarFocused  bool
-	cursorPos      int
-	selectionStart *int
+	UrlInput *dom.TextInputNode
 
 	backButton *dom.CircleNode
 	stateText  *dom.TextNode
@@ -36,41 +29,33 @@ type Browser struct {
 }
 
 func NewBrowser(window *pixelgl.Window, initialURL string) *Browser {
+	// TODO: maybe group chrome stuff into a custom element.
+	// Initialize nodes.
 	backButton := &dom.CircleNode{
 		Radius: 7,
 	}
-	backgroundRect := &dom.RectNode{}
-	selectionRect := &dom.RectNode{}
-	urlBar := &dom.TextNode{}
 	stateText := &dom.TextNode{}
 	errorText := &dom.TextNode{}
-	urlCursor := &dom.LineNode{}
+	urlInput := &dom.TextInputNode{}
+
+	// Group them so we can draw in one go.
 	chromeGroup := &dom.GroupNode{
 		TextNode: []*dom.TextNode{
-			urlBar,
 			stateText,
 			errorText,
 		},
-		CircleNode: []*dom.CircleNode{backButton},
-		RectNode: []*dom.RectNode{
-			backgroundRect,
-			selectionRect,
-		},
-		LineNode: []*dom.LineNode{
-			urlCursor,
-		},
+		CircleNode:    []*dom.CircleNode{backButton},
+		TextInputNode: []*dom.TextInputNode{urlInput},
 	}
 
 	b := &Browser{
 		window: window,
 
-		urlBar:         urlBar,
-		urlCursor:      urlCursor,
-		backButton:     backButton,
-		backgroundRect: backgroundRect,
-		selectionRect:  selectionRect,
-		stateText:      stateText,
-		errorText:      errorText,
+		// Save nodes so we can reference them.
+		backButton: backButton,
+		stateText:  stateText,
+		errorText:  errorText,
+		UrlInput:   urlInput,
 
 		chromeContentRenderer: NewContentRenderer(chromeGroup),
 	}
@@ -92,55 +77,17 @@ func (b *Browser) DrawChrome(t pixel.Target) {
 	b.currentPage.mu.RLock()
 	defer b.currentPage.mu.RUnlock()
 
-	const urlBarStart = 90
+	const urlBarStart = 85
 
-	// Update background rect.
-	b.backgroundRect.Width = b.window.Bounds().W() - urlBarStart + 5
-	b.backgroundRect.X = urlBarStart - 5
-	b.backgroundRect.Y = b.window.Bounds().H() - 30
-	b.backgroundRect.Height = 30
-	if b.urlBarFocused {
-		b.backgroundRect.Fill = "lightgrey"
+	// Update URL input.
+	if b.UrlInput.Value == b.currentPage.url {
+		b.UrlInput.TextColor = "black"
 	} else {
-		b.backgroundRect.Fill = "white"
+		b.UrlInput.TextColor = "blue"
 	}
-
-	// Update URL bar.
-	urlToShow := b.newURL
-	if urlToShow != b.currentPage.url {
-		b.urlBar.Fill = "blue"
-	} else {
-		b.urlBar.Fill = "black"
-	}
-	b.urlBar.Value = urlToShow
-	b.urlBar.X = urlBarStart
-	b.urlBar.Y = b.window.Bounds().H() - 20
-
-	// Update cursor.
-	const charWidth = float64(7)
-	cursorX := float64(b.cursorPos)*charWidth + urlBarStart
-	b.urlCursor.X1 = cursorX
-	b.urlCursor.X2 = cursorX
-	b.urlCursor.Y1 = b.window.Bounds().H() - 8
-	b.urlCursor.Y2 = b.window.Bounds().H() - 22
-	if b.urlBarFocused {
-		b.urlCursor.Stroke = "red"
-	} else {
-		b.urlCursor.Stroke = ""
-	}
-
-	// Update selection.
-
-	if b.selectionStart == nil {
-		b.selectionRect.Fill = ""
-	} else {
-		b.selectionRect.Fill = "pink"
-		startIdx, endIdx := b.GetSelection()
-		b.selectionRect.X = float64(startIdx)*charWidth + urlBarStart
-		b.selectionRect.Y = b.window.Bounds().H() - 23
-		b.selectionRect.Width = float64(endIdx-startIdx) * charWidth
-		b.selectionRect.Height = 13
-	}
+	b.UrlInput.Width = b.window.Bounds().W() - urlBarStart + 5
+	b.UrlInput.X = urlBarStart
+	b.UrlInput.Y = b.window.Bounds().H() - 30
 
 	// Update status text.
 	b.stateText.Value = StateNames[b.currentPage.state]
@@ -186,124 +133,12 @@ func (b *Browser) ProcessMouseEvents(pt pixel.Vec, mouseDown bool, mouseJustDown
 	}
 }
 
-func (b *Browser) ProcessTyping(t string) {
-	if !b.urlBarFocused {
-		return
-	}
-	if b.selectionStart != nil {
-		b.DeleteSelection()
-	}
-	b.newURL = b.newURL[:b.cursorPos] + t + b.newURL[b.cursorPos:]
-	b.cursorPos += 1
-}
-
-func (b *Browser) ProcessBackspace() {
-	if !b.urlBarFocused {
-		return
-	}
-	if b.newURL == "" {
-		return
-	}
-	if b.selectionStart == nil {
-		b.newURL = b.newURL[:b.cursorPos-1] + b.newURL[b.cursorPos:]
-		b.cursorPos -= 1
-	} else {
-		b.DeleteSelection()
-	}
-}
-
-func (b *Browser) DeleteSelection() {
-	startIdx, endIdx := b.GetSelection()
-	b.newURL = b.newURL[:startIdx] + b.newURL[endIdx:]
-	b.CancelSelection()
-}
-
-func (b *Browser) GetSelection() (int, int) {
-	if b.selectionStart == nil {
-		log.Println("nil selection start")
-		return b.cursorPos, b.cursorPos
-	}
-	selectionStart := *b.selectionStart
-	var startIdx int
-	var endIdx int
-	if selectionStart < b.cursorPos {
-		startIdx = selectionStart
-		endIdx = b.cursorPos
-	} else {
-		endIdx = selectionStart
-		startIdx = b.cursorPos
-	}
-	return startIdx, endIdx
-}
-
-func (b *Browser) ProcessEnter() {
-	if !b.urlBarFocused {
-		return
-	}
-	b.NavigateTo(b.newURL)
-	b.urlBarFocused = false
-}
-
-func (b *Browser) FocusURLBar() {
-	b.urlBarFocused = true
-	b.cursorPos = len(b.newURL)
-}
-
-func (b *Browser) UnFocusURLBar() {
-	b.urlBarFocused = false
-}
-
-func (b *Browser) ProcessLeftKey(shiftDown bool, superDown bool) {
-	if !b.urlBarFocused {
-		return
-	}
-	b.MaybeStartSelection(shiftDown)
-	if superDown {
-		b.cursorPos = 0
-		return
-	}
-	b.cursorPos = b.cursorPos - 1
-	if b.cursorPos < 0 {
-		b.cursorPos = 0
-	}
-}
-
-func (b *Browser) ProcessRightKey(shiftDown bool, superDown bool) {
-	if !b.urlBarFocused {
-		return
-	}
-	b.MaybeStartSelection(shiftDown)
-	if superDown {
-		b.cursorPos = len(b.newURL)
-		return
-	}
-	b.cursorPos = b.cursorPos + 1
-	if b.cursorPos > len(b.newURL) {
-		b.cursorPos = len(b.newURL)
-	}
-}
-
-func (b *Browser) MaybeStartSelection(shiftDown bool) {
-	if !shiftDown {
-		b.CancelSelection()
-		return
-	}
-	if b.selectionStart != nil {
-		return
-	}
-	selectionStart := b.cursorPos
-	b.selectionStart = &selectionStart
-}
-
-func (b *Browser) CancelSelection() {
-	b.selectionStart = nil
-}
-
 func (b *Browser) NavigateTo(url string) {
 	log.Println("navigate to", url)
 	b.newURL = url
 	b.currentPage = NewBrowserPage(url)
 	b.currentPage.Load()
+	b.UrlInput.SetValue(url)
 
 	b.history = append(b.history, url)
 }

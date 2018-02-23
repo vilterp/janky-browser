@@ -13,13 +13,12 @@ type GroupNode struct {
 
 	// TODO: this destroys ordering...
 	// not sure how to get it to understand an interface...
-	RectNode   []*RectNode   `xml:"rect"`
-	CircleNode []*CircleNode `xml:"circle"`
-	TextNode   []*TextNode   `xml:"text"`
-	GroupNode  []*GroupNode  `xml:"g"`
-	LineNode   []*LineNode   `xml:"line"`
-	//
-	//children []Node
+	RectNode      []*RectNode      `xml:"rect"`
+	CircleNode    []*CircleNode    `xml:"circle"`
+	TextNode      []*TextNode      `xml:"text"`
+	GroupNode     []*GroupNode     `xml:"g"`
+	LineNode      []*LineNode      `xml:"line"`
+	TextInputNode []*TextInputNode `xml:"textInput"`
 }
 
 var _ Node = &GroupNode{}
@@ -49,6 +48,9 @@ func (gn *GroupNode) Children() []Node {
 	}
 	for _, line := range gn.LineNode {
 		ret = append(ret, line)
+	}
+	for _, textInput := range gn.TextInputNode {
+		ret = append(ret, textInput)
 	}
 	return ret
 }
