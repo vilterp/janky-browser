@@ -144,7 +144,7 @@ func (b *Browser) NavigateTo(url string) {
 	b.newURL = url
 	b.currentPage = NewBrowserPage(url)
 	b.currentPage.Load()
-	b.UrlInput.SetValue(url)
+	b.UrlInput.Value = url
 
 	b.history = append(b.history, url)
 }

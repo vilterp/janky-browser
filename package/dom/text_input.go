@@ -2,11 +2,13 @@ package dom
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 
 	"github.com/faiface/pixel"
 )
+
+// TODO: additional keyboard movement
+// - word boundaries on option+{left, right}
 
 type TextInputNode struct {
 	// props
@@ -121,10 +123,6 @@ func (tin *TextInputNode) Contains(pt pixel.Vec) bool {
 	return tin.backgroundRect.Contains(pt)
 }
 
-func (tin *TextInputNode) SetValue(v string) {
-	tin.Value = v
-}
-
 // Event handling stuff.
 
 func (tin *TextInputNode) ProcessTyping(t string) {
@@ -154,15 +152,14 @@ func (tin *TextInputNode) ProcessBackspace() {
 }
 
 func (tin *TextInputNode) DeleteSelection() {
-	log.Println("delete selectionsdf")
 	startIdx, endIdx := tin.GetSelection()
 	tin.Value = tin.Value[:startIdx] + tin.Value[endIdx:]
 	tin.CancelSelection()
+	tin.cursorPos = startIdx
 }
 
 func (tin *TextInputNode) GetSelection() (int, int) {
 	if tin.selectionStart == nil {
-		log.Println("nil selection start")
 		return tin.cursorPos, tin.cursorPos
 	}
 	selectionStart := *tin.selectionStart
@@ -187,7 +184,14 @@ func (tin *TextInputNode) ProcessEnter() {
 
 func (tin *TextInputNode) Focus() {
 	tin.Focused = true
-	tin.cursorPos = len(tin.Value)
+	if len(tin.Value) > 0 {
+		tin.cursorPos = len(tin.Value)
+		selectionStart := 0
+		tin.selectionStart = &selectionStart
+		return
+	}
+	tin.cursorPos = 0
+	tin.selectionStart = nil
 }
 
 func (tin *TextInputNode) UnFocus() {
