@@ -21,15 +21,18 @@ type Browser struct {
 	// TODO: wrap this up in its own struct somehow.
 	chromeContentRenderer *ContentRenderer
 
-	backgroundRect *dom.RectNode
-	backButton     *dom.CircleNode
+	// TODO: factor these out into text field
 	urlBar         *dom.TextNode
 	urlCursor      *dom.LineNode
-	stateText      *dom.TextNode
-	errorText      *dom.TextNode
+	backgroundRect *dom.RectNode
+	selectionRect  *dom.RectNode
+	urlBarFocused  bool
+	cursorPos      int
+	selectionStart *int
 
-	urlBarFocused bool
-	cursorPos     int
+	backButton *dom.CircleNode
+	stateText  *dom.TextNode
+	errorText  *dom.TextNode
 }
 
 func NewBrowser(window *pixelgl.Window, initialURL string) *Browser {
@@ -37,6 +40,7 @@ func NewBrowser(window *pixelgl.Window, initialURL string) *Browser {
 		Radius: 7,
 	}
 	backgroundRect := &dom.RectNode{}
+	selectionRect := &dom.RectNode{}
 	urlBar := &dom.TextNode{}
 	stateText := &dom.TextNode{}
 	errorText := &dom.TextNode{}
@@ -50,6 +54,7 @@ func NewBrowser(window *pixelgl.Window, initialURL string) *Browser {
 		CircleNode: []*dom.CircleNode{backButton},
 		RectNode: []*dom.RectNode{
 			backgroundRect,
+			selectionRect,
 		},
 		LineNode: []*dom.LineNode{
 			urlCursor,
@@ -63,6 +68,7 @@ func NewBrowser(window *pixelgl.Window, initialURL string) *Browser {
 		urlCursor:      urlCursor,
 		backButton:     backButton,
 		backgroundRect: backgroundRect,
+		selectionRect:  selectionRect,
 		stateText:      stateText,
 		errorText:      errorText,
 
@@ -123,6 +129,19 @@ func (b *Browser) DrawChrome(t pixel.Target) {
 		b.urlCursor.Stroke = ""
 	}
 
+	// Update selection.
+
+	if b.selectionStart == nil {
+		b.selectionRect.Fill = ""
+	} else {
+		b.selectionRect.Fill = "pink"
+		startIdx, endIdx := b.GetSelection()
+		b.selectionRect.X = float64(startIdx)*charWidth + urlBarStart
+		b.selectionRect.Y = b.window.Bounds().H() - 23
+		b.selectionRect.Width = float64(endIdx-startIdx) * charWidth
+		b.selectionRect.Height = 13
+	}
+
 	// Update status text.
 	b.stateText.Value = StateNames[b.currentPage.state]
 	b.stateText.X = 35
@@ -171,6 +190,9 @@ func (b *Browser) ProcessTyping(t string) {
 	if !b.urlBarFocused {
 		return
 	}
+	if b.selectionStart != nil {
+		b.DeleteSelection()
+	}
 	b.newURL = b.newURL[:b.cursorPos] + t + b.newURL[b.cursorPos:]
 	b.cursorPos += 1
 }
@@ -182,8 +204,36 @@ func (b *Browser) ProcessBackspace() {
 	if b.newURL == "" {
 		return
 	}
-	b.newURL = b.newURL[:b.cursorPos-1] + b.newURL[b.cursorPos:]
-	b.cursorPos -= 1
+	if b.selectionStart == nil {
+		b.newURL = b.newURL[:b.cursorPos-1] + b.newURL[b.cursorPos:]
+		b.cursorPos -= 1
+	} else {
+		b.DeleteSelection()
+	}
+}
+
+func (b *Browser) DeleteSelection() {
+	startIdx, endIdx := b.GetSelection()
+	b.newURL = b.newURL[:startIdx] + b.newURL[endIdx:]
+	b.CancelSelection()
+}
+
+func (b *Browser) GetSelection() (int, int) {
+	if b.selectionStart == nil {
+		log.Println("nil selection start")
+		return b.cursorPos, b.cursorPos
+	}
+	selectionStart := *b.selectionStart
+	var startIdx int
+	var endIdx int
+	if selectionStart < b.cursorPos {
+		startIdx = selectionStart
+		endIdx = b.cursorPos
+	} else {
+		endIdx = selectionStart
+		startIdx = b.cursorPos
+	}
+	return startIdx, endIdx
 }
 
 func (b *Browser) ProcessEnter() {
@@ -203,24 +253,42 @@ func (b *Browser) UnFocusURLBar() {
 	b.urlBarFocused = false
 }
 
-func (b *Browser) ProcessLeftKey() {
+func (b *Browser) ProcessLeftKey(shiftDown bool) {
 	if !b.urlBarFocused {
 		return
 	}
+	b.MaybeStartSelection(shiftDown)
 	b.cursorPos = b.cursorPos - 1
 	if b.cursorPos < 0 {
 		b.cursorPos = 0
 	}
 }
 
-func (b *Browser) ProcessRightKey() {
+func (b *Browser) ProcessRightKey(shiftDown bool) {
 	if !b.urlBarFocused {
 		return
 	}
+	b.MaybeStartSelection(shiftDown)
 	b.cursorPos = b.cursorPos + 1
 	if b.cursorPos > len(b.newURL) {
 		b.cursorPos = len(b.newURL)
 	}
+}
+
+func (b *Browser) MaybeStartSelection(shiftDown bool) {
+	if !shiftDown {
+		b.CancelSelection()
+		return
+	}
+	if b.selectionStart != nil {
+		return
+	}
+	selectionStart := b.cursorPos
+	b.selectionStart = &selectionStart
+}
+
+func (b *Browser) CancelSelection() {
+	b.selectionStart = nil
 }
 
 func (b *Browser) NavigateTo(url string) {

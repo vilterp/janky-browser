@@ -52,14 +52,14 @@ func run() {
 		if win.JustReleased(pixelgl.KeyTab) || win.JustReleased(pixelgl.KeyEscape) {
 			browser.UnFocusURLBar()
 		}
+		shiftDown := win.Pressed(pixelgl.KeyLeftShift) || win.Pressed(pixelgl.KeyRightShift)
 		if win.JustPressed(pixelgl.KeyLeft) || win.Repeated(pixelgl.KeyLeft) {
-			browser.ProcessLeftKey()
+			browser.ProcessLeftKey(shiftDown)
 		}
 		if win.JustPressed(pixelgl.KeyRight) || win.Repeated(pixelgl.KeyRight) {
-			browser.ProcessRightKey()
+			browser.ProcessRightKey(shiftDown)
 		}
 
-		// TODO: handle clicks, not just position
 		// TODO: handle keyboard events
 
 		browser.Draw(win)
