@@ -4,7 +4,7 @@ import (
 	"reflect"
 
 	"github.com/faiface/pixel"
-	"github.com/vilterp/jankybrowser/package/dom"
+	"github.com/vilterp/janky-browser/package/dom"
 )
 
 type ContentRenderer struct {

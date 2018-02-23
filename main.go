@@ -5,7 +5,7 @@ import (
 
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
-	"github.com/vilterp/jankybrowser/package"
+	"github.com/vilterp/janky-browser/package"
 	"golang.org/x/image/colornames"
 )
 

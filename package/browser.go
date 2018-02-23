@@ -6,7 +6,7 @@ import (
 
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
-	"github.com/vilterp/jankybrowser/package/dom"
+	"github.com/vilterp/janky-browser/package/dom"
 )
 
 type Browser struct {
