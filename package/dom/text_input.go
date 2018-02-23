@@ -16,6 +16,7 @@ type TextInputNode struct {
 	Width     float64
 	TextColor string
 	Focused   bool
+	OnEnter   func(string)
 
 	// state
 	cursorPos      int
@@ -75,9 +76,9 @@ func (tin *TextInputNode) Draw(t pixel.Target) {
 	tin.backgroundRect.Y = tin.Y
 	tin.backgroundRect.Height = 30
 	if tin.Focused {
-		tin.backgroundRect.Stroke = "red"
+		tin.backgroundRect.Fill = "lightgrey"
 	} else {
-		tin.backgroundRect.Stroke = ""
+		tin.backgroundRect.Fill = ""
 	}
 
 	textStartX := tin.X + 5
@@ -138,7 +139,6 @@ func (tin *TextInputNode) ProcessTyping(t string) {
 }
 
 func (tin *TextInputNode) ProcessBackspace() {
-	log.Println("process backspace")
 	if !tin.Focused {
 		return
 	}
@@ -151,7 +151,6 @@ func (tin *TextInputNode) ProcessBackspace() {
 	} else {
 		tin.DeleteSelection()
 	}
-	log.Println("process backspace: now ", tin.Value)
 }
 
 func (tin *TextInputNode) DeleteSelection() {
@@ -183,9 +182,7 @@ func (tin *TextInputNode) ProcessEnter() {
 	if !tin.Focused {
 		return
 	}
-	//tin.NavigateTo(tin.Value)
-	log.Println("pressed enter... figure out how to emit event...")
-	tin.Focused = false
+	tin.OnEnter(tin.Value)
 }
 
 func (tin *TextInputNode) Focus() {

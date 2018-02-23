@@ -59,6 +59,12 @@ func NewBrowser(window *pixelgl.Window, initialURL string) *Browser {
 
 		chromeContentRenderer: NewContentRenderer(chromeGroup),
 	}
+
+	b.UrlInput.OnEnter = func(newUrl string) {
+		b.NavigateTo(newUrl)
+		b.UrlInput.UnFocus()
+	}
+
 	b.NavigateTo(initialURL)
 	return b
 }
