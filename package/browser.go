@@ -253,22 +253,30 @@ func (b *Browser) UnFocusURLBar() {
 	b.urlBarFocused = false
 }
 
-func (b *Browser) ProcessLeftKey(shiftDown bool) {
+func (b *Browser) ProcessLeftKey(shiftDown bool, superDown bool) {
 	if !b.urlBarFocused {
 		return
 	}
 	b.MaybeStartSelection(shiftDown)
+	if superDown {
+		b.cursorPos = 0
+		return
+	}
 	b.cursorPos = b.cursorPos - 1
 	if b.cursorPos < 0 {
 		b.cursorPos = 0
 	}
 }
 
-func (b *Browser) ProcessRightKey(shiftDown bool) {
+func (b *Browser) ProcessRightKey(shiftDown bool, superDown bool) {
 	if !b.urlBarFocused {
 		return
 	}
 	b.MaybeStartSelection(shiftDown)
+	if superDown {
+		b.cursorPos = len(b.newURL)
+		return
+	}
 	b.cursorPos = b.cursorPos + 1
 	if b.cursorPos > len(b.newURL) {
 		b.cursorPos = len(b.newURL)

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"time"
 
 	"github.com/faiface/pixel"
@@ -37,7 +36,6 @@ func run() {
 
 		typed := win.Typed()
 		if len(typed) > 0 {
-			log.Println("typed", typed)
 			browser.ProcessTyping(typed)
 		}
 		if win.JustReleased(pixelgl.KeyBackspace) || win.Repeated(pixelgl.KeyBackspace) {
@@ -46,7 +44,8 @@ func run() {
 		if win.JustReleased(pixelgl.KeyEnter) {
 			browser.ProcessEnter()
 		}
-		if win.JustReleased(pixelgl.KeyL) && (win.Pressed(pixelgl.KeyLeftSuper) || win.Pressed(pixelgl.KeyRightSuper)) {
+		superDown := win.Pressed(pixelgl.KeyLeftSuper) || win.Pressed(pixelgl.KeyRightSuper)
+		if win.JustReleased(pixelgl.KeyL) && superDown {
 			browser.FocusURLBar()
 		}
 		if win.JustReleased(pixelgl.KeyTab) || win.JustReleased(pixelgl.KeyEscape) {
@@ -54,10 +53,10 @@ func run() {
 		}
 		shiftDown := win.Pressed(pixelgl.KeyLeftShift) || win.Pressed(pixelgl.KeyRightShift)
 		if win.JustPressed(pixelgl.KeyLeft) || win.Repeated(pixelgl.KeyLeft) {
-			browser.ProcessLeftKey(shiftDown)
+			browser.ProcessLeftKey(shiftDown, superDown)
 		}
 		if win.JustPressed(pixelgl.KeyRight) || win.Repeated(pixelgl.KeyRight) {
-			browser.ProcessRightKey(shiftDown)
+			browser.ProcessRightKey(shiftDown, superDown)
 		}
 
 		// TODO: handle keyboard events
