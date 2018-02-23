@@ -2,7 +2,6 @@ language: go
 go:
 - 1.9.x
 install:
-- go get github.com/faiface/pixel
+- make deps
 script:
-- go build main.go
-
+- make
