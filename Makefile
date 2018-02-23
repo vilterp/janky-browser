@@ -7,4 +7,4 @@ deps:
 	go get github.com/golang/freetype/truetype
 	go get github.com/go-gl/glfw/v3.2/glfw
 
-.PHONY deps jankybrowser
+.PHONY: deps jankybrowser
