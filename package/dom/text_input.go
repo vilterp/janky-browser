@@ -196,6 +196,7 @@ func (tin *TextInputNode) Focus() {
 
 func (tin *TextInputNode) UnFocus() {
 	tin.Focused = false
+	tin.CancelSelection()
 }
 
 func (tin *TextInputNode) ProcessLeftKey(shiftDown bool, superDown bool) {
