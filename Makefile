@@ -1,5 +1,6 @@
 jankybrowser:
-	go build -o jankybrowser main.go
+	ls
+	go build -o jankybrowser ./main.go
 
 deps:
 	go get github.com/faiface/pixel
