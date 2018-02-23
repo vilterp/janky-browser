@@ -1,0 +1,8 @@
+language: go
+go:
+- 1.9.x
+install:
+- go get github.com/faiface/pixel
+script:
+- go build main.go
+
