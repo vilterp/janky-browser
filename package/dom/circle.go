@@ -54,3 +54,7 @@ func (cn *CircleNode) Contains(pt pixel.Vec) bool {
 	diff := pt.Sub(center)
 	return diff.Len() <= cn.Radius
 }
+
+func (cn *CircleNode) GetBounds() pixel.Rect {
+	return pixel.R(cn.X-cn.Radius, cn.Y-cn.Radius, cn.X+cn.Radius, cn.Y+cn.Radius)
+}

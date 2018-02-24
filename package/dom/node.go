@@ -12,4 +12,14 @@ type Node interface {
 	Init()
 	Draw(target pixel.Target)
 	Contains(pixel.Vec) bool
+	GetBounds() pixel.Rect
+}
+
+func GetAllNodes(tree Node) []Node {
+	var output []Node
+	output = append(output, tree)
+	for _, child := range tree.Children() {
+		output = append(output, GetAllNodes(child)...)
+	}
+	return output
 }

@@ -9,6 +9,7 @@ import (
 
 	"github.com/faiface/pixel"
 	"github.com/vilterp/janky-browser/package/dom"
+	"github.com/vilterp/janky-browser/package/util"
 )
 
 type PageState = int
@@ -34,7 +35,8 @@ type BrowserPage struct {
 	state     PageState
 	loadError error // set when state = PageStateError
 
-	renderer *ContentRenderer
+	renderer           *ContentRenderer
+	highlightedNodeIdx *int
 }
 
 func NewBrowserPage(url string) *BrowserPage {
@@ -106,11 +108,48 @@ func (bp *BrowserPage) Draw(t pixel.Target) {
 	case PageStateLoading:
 		break
 	case PageStateLoaded:
+		if bp.highlightedNodeIdx == nil {
+			bp.renderer.highlightedNode = nil
+		} else {
+			allNodes := dom.GetAllNodes(bp.renderer.rootNode)
+			bp.renderer.highlightedNode = allNodes[*bp.highlightedNodeIdx]
+		}
 		bp.renderer.Draw(t)
 	case PageStateError:
 		// TODO: render error state
 		// make a <text> element and an error DOM and use it!
 	}
+}
+
+func (bp *BrowserPage) numNodes() int {
+	if bp.state != PageStateLoaded {
+		return 0
+	}
+	return len(dom.GetAllNodes(bp.renderer.rootNode))
+}
+
+func (bp *BrowserPage) HighlightNextNode() {
+	bp.changeHighlightedNodeIdx(1)
+}
+
+func (bp *BrowserPage) HighlightPrevNode() {
+	bp.changeHighlightedNodeIdx(-1)
+}
+
+func (bp *BrowserPage) UnHighlightNode() {
+	bp.highlightedNodeIdx = nil
+}
+
+func (bp *BrowserPage) changeHighlightedNodeIdx(by int) {
+	if bp.highlightedNodeIdx == nil {
+		zero := 0
+		bp.highlightedNodeIdx = &zero
+		return
+	}
+	numNodes := bp.numNodes()
+	newIdx := util.Clamp(0, numNodes-1, *bp.highlightedNodeIdx+by)
+	bp.highlightedNodeIdx = &newIdx
+	log.Println("highlight node:", *bp.highlightedNodeIdx)
 }
 
 func (bp *BrowserPage) ProcessMouseEvents(pt pixel.Vec, mouseDown bool, mouseJustDown bool) string {
@@ -125,10 +164,6 @@ func (bp *BrowserPage) ProcessMouseEvents(pt pixel.Vec, mouseDown bool, mouseJus
 
 	var navigateTo string
 	if len(clickedNodes) > 0 {
-		//var hoveredNodeStrs []string
-		//for _, hoveredNode := range hoveredNodes {
-		//	hoveredNodeStrs = append(hoveredNodeStrs, dom.Format(hoveredNode))
-		//}
 		for _, hoveredNode := range clickedNodes {
 			switch n := hoveredNode.(type) {
 			case *dom.GroupNode:

@@ -69,3 +69,16 @@ func (gn *GroupNode) Contains(pt pixel.Vec) bool {
 	}
 	return false
 }
+
+func (gn *GroupNode) GetBounds() pixel.Rect {
+	// nah, don't want to start out at 0, 0...
+	rect := pixel.Rect{}
+	for idx, child := range gn.Children() {
+		if idx == 0 {
+			rect = child.GetBounds()
+			continue
+		}
+		rect = rect.Union(child.GetBounds())
+	}
+	return rect
+}

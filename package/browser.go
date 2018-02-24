@@ -161,7 +161,7 @@ func (b *Browser) NavigateTo(newURL string) {
 }
 
 func (b *Browser) NavigateBack() error {
-	toURL, err := b.PopHistory()
+	toURL, err := b.popHistory()
 	if err != nil {
 		return err
 	}
@@ -169,7 +169,7 @@ func (b *Browser) NavigateBack() error {
 	return nil
 }
 
-func (b *Browser) PopHistory() (string, error) {
+func (b *Browser) popHistory() (string, error) {
 	if len(b.history) == 1 {
 		return "", fmt.Errorf("can't go back; already on last page")
 	}
@@ -177,4 +177,16 @@ func (b *Browser) PopHistory() (string, error) {
 	popped := b.history[len(b.history)-2]
 	b.history = b.history[:len(b.history)-2]
 	return popped, nil
+}
+
+func (b *Browser) UnHighlightNode() {
+	b.currentPage.UnHighlightNode()
+}
+
+func (b *Browser) HighlightNextNode() {
+	b.currentPage.HighlightNextNode()
+}
+
+func (b *Browser) HighlightPrevNode() {
+	b.currentPage.HighlightPrevNode()
 }

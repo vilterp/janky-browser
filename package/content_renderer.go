@@ -13,6 +13,8 @@ type ContentRenderer struct {
 	// the set of nodes the mouse was over when it was pressed.
 	// empty if the mouse has not been pressed.
 	mouseDownNodes []dom.Node
+
+	highlightedNode dom.Node
 }
 
 func NewContentRenderer(rootNode dom.Node) *ContentRenderer {
@@ -47,4 +49,16 @@ func (cr *ContentRenderer) GetHoveredNodes(pt pixel.Vec) []dom.Node {
 
 func (cr *ContentRenderer) Draw(t pixel.Target) {
 	cr.rootNode.Draw(t)
+
+	// Draw highlight rect if we have a highlighted node.
+	if cr.highlightedNode == nil {
+		return
+	}
+	highlightRect := dom.RectFromBounds(cr.highlightedNode.GetBounds())
+	highlightRect.Stroke = "red"
+	highlightRect.Draw(t)
+}
+
+func (cr *ContentRenderer) SetHighlightedNode(node dom.Node) {
+	cr.highlightedNode = node
 }

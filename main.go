@@ -9,7 +9,7 @@ import (
 	"golang.org/x/image/colornames"
 )
 
-const initPage = "http://localhost:8081/circleRectText.svg"
+const initPage = "http://localhost:8084/circleRectText.svg"
 
 func run() {
 	cfg := pixelgl.WindowConfig{
@@ -21,6 +21,7 @@ func run() {
 	if err != nil {
 		panic(err)
 	}
+	win.SetComposeMethod(pixel.ComposeOver)
 
 	browser := jankybrowser.NewBrowser(win, initPage)
 
@@ -28,12 +29,14 @@ func run() {
 	for !win.Closed() {
 		win.Clear(colornames.White)
 
+		// Handle mouse events.
 		browser.ProcessMouseEvents(
 			win.MousePosition(),
 			win.Pressed(pixelgl.MouseButton1),
 			win.JustPressed(pixelgl.MouseButton1),
 		)
 
+		// Handle keyboard events.
 		typed := win.Typed()
 		if len(typed) > 0 {
 			browser.UrlInput.ProcessTyping(typed)
@@ -49,18 +52,29 @@ func run() {
 			browser.UrlInput.Focus()
 		}
 		if win.JustReleased(pixelgl.KeyTab) || win.JustReleased(pixelgl.KeyEscape) {
-			browser.UrlInput.UnFocus()
+			if browser.UrlInput.Focused {
+				browser.UrlInput.UnFocus()
+			} else {
+				browser.UnHighlightNode()
+			}
 		}
 		shiftDown := win.Pressed(pixelgl.KeyLeftShift) || win.Pressed(pixelgl.KeyRightShift)
 		if win.JustPressed(pixelgl.KeyLeft) || win.Repeated(pixelgl.KeyLeft) {
-			browser.UrlInput.ProcessLeftKey(shiftDown, superDown)
+			if browser.UrlInput.Focused {
+				browser.UrlInput.ProcessLeftKey(shiftDown, superDown)
+			} else {
+				browser.HighlightPrevNode()
+			}
 		}
 		if win.JustPressed(pixelgl.KeyRight) || win.Repeated(pixelgl.KeyRight) {
-			browser.UrlInput.ProcessRightKey(shiftDown, superDown)
+			if browser.UrlInput.Focused {
+				browser.UrlInput.ProcessRightKey(shiftDown, superDown)
+			} else {
+				browser.HighlightNextNode()
+			}
 		}
 
-		// TODO: handle keyboard events
-
+		// Draw.
 		browser.Draw(win)
 		win.Update()
 
