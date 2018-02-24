@@ -95,7 +95,6 @@ func (bp *BrowserPage) doLoad() {
 		node = &dom.GroupNode{}
 	}
 	bp.renderer = NewContentRenderer(node)
-	log.Println("parsed DOM tree:", dom.Format(bp.renderer.rootNode))
 }
 
 func (bp *BrowserPage) Draw(t pixel.Target) {

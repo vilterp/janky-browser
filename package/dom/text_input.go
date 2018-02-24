@@ -240,6 +240,12 @@ func (tin *TextInputNode) CancelSelection() {
 	tin.selectionStart = nil
 }
 
+func (tin *TextInputNode) SelectAll() {
+	tin.cursorPos = len(tin.Value)
+	zero := 0
+	tin.selectionStart = &zero
+}
+
 func (tin *TextInputNode) GetBounds() pixel.Rect {
 	return tin.backgroundRect.GetBounds()
 }

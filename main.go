@@ -52,17 +52,20 @@ func run() {
 		if len(typed) > 0 {
 			browser.UrlInput.ProcessTyping(typed)
 		}
-		if win.JustReleased(pixelgl.KeyBackspace) || win.Repeated(pixelgl.KeyBackspace) {
+		if win.JustPressed(pixelgl.KeyBackspace) || win.Repeated(pixelgl.KeyBackspace) {
 			browser.UrlInput.ProcessBackspace()
 		}
-		if win.JustReleased(pixelgl.KeyEnter) {
+		if win.JustPressed(pixelgl.KeyEnter) {
 			browser.UrlInput.ProcessEnter()
 		}
 		superDown := win.Pressed(pixelgl.KeyLeftSuper) || win.Pressed(pixelgl.KeyRightSuper)
-		if win.JustReleased(pixelgl.KeyL) && superDown {
+		if win.JustPressed(pixelgl.KeyL) && superDown {
 			browser.UrlInput.Focus()
 		}
-		if win.JustReleased(pixelgl.KeyTab) || win.JustReleased(pixelgl.KeyEscape) {
+		if win.JustPressed(pixelgl.KeyA) && superDown {
+			browser.UrlInput.SelectAll()
+		}
+		if win.JustPressed(pixelgl.KeyTab) || win.JustPressed(pixelgl.KeyEscape) {
 			if browser.UrlInput.Focused {
 				browser.UrlInput.UnFocus()
 			} else {
