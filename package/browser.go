@@ -12,6 +12,7 @@ import (
 
 type Browser struct {
 	window      *pixelgl.Window
+	devtools    *Devtools
 	currentPage *BrowserPage
 
 	history []string
@@ -27,7 +28,9 @@ type Browser struct {
 	errorText  *dom.TextNode
 }
 
-func NewBrowser(window *pixelgl.Window, initialURL string) *Browser {
+func NewBrowser(
+	window *pixelgl.Window, initialURL string, devtools *Devtools,
+) *Browser {
 	// TODO: maybe group chrome stuff into a custom element.
 	// Initialize nodes.
 	backButton := &dom.TextNode{
@@ -48,7 +51,8 @@ func NewBrowser(window *pixelgl.Window, initialURL string) *Browser {
 	}
 
 	b := &Browser{
-		window: window,
+		window:   window,
+		devtools: devtools,
 
 		// Save nodes so we can reference them.
 		backButton: backButton,
@@ -74,6 +78,9 @@ func (b *Browser) Draw(t pixel.Target) {
 
 	// Draw page.
 	b.currentPage.Draw(t)
+
+	// Draw devtools.
+	b.devtools.Draw(b.currentPage)
 }
 
 // TODO: factor this out into its own DOMNode/Component which takes its own attributes

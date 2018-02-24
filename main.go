@@ -21,13 +21,24 @@ func run() {
 	if err != nil {
 		panic(err)
 	}
-	win.SetComposeMethod(pixel.ComposeOver)
 
-	browser := jankybrowser.NewBrowser(win, initPage)
+	devtoolsCfg := pixelgl.WindowConfig{
+		Title:     "Devtools | JankyBrowser",
+		Bounds:    pixel.R(0, 0, 500, 500),
+		Resizable: true,
+	}
+	devtoolsWin, err := pixelgl.NewWindow(devtoolsCfg)
+	if err != nil {
+		panic(err)
+	}
+
+	devtools := jankybrowser.NewDevtools(devtoolsWin)
+	browser := jankybrowser.NewBrowser(win, initPage, devtools)
 
 	fps := time.Tick(time.Second / 60)
 	for !win.Closed() {
 		win.Clear(colornames.White)
+		devtoolsWin.Clear(colornames.White)
 
 		// Handle mouse events.
 		browser.ProcessMouseEvents(
@@ -77,6 +88,7 @@ func run() {
 		// Draw.
 		browser.Draw(win)
 		win.Update()
+		devtoolsWin.Update()
 
 		<-fps
 	}
