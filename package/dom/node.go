@@ -17,9 +17,16 @@ type Node interface {
 
 func GetAllNodes(tree Node) []Node {
 	var output []Node
-	output = append(output, tree)
-	for _, child := range tree.Children() {
-		output = append(output, GetAllNodes(child)...)
-	}
+	Visit(tree, func(n Node) {
+		output = append(output, n)
+	})
 	return output
+}
+
+// Visit does a pre-order traversal of the DOM tree.
+func Visit(tree Node, visitor func(n Node)) {
+	visitor(tree)
+	for _, child := range tree.Children() {
+		Visit(child, visitor)
+	}
 }

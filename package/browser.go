@@ -72,12 +72,12 @@ func NewBrowser(
 	return b
 }
 
-func (b *Browser) Draw(t pixel.Target) {
+func (b *Browser) Draw() {
 	// Update & draw URL bar.
-	b.DrawChrome(t)
+	b.DrawChrome(b.window)
 
 	// Draw page.
-	b.currentPage.Draw(t)
+	b.currentPage.Draw(b.window)
 
 	// Draw devtools.
 	b.devtools.Draw(b.currentPage)

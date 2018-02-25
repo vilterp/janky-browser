@@ -1,6 +1,10 @@
 package main
 
 import (
+	"flag"
+	"log"
+	"os"
+	"runtime/pprof"
 	"time"
 
 	"github.com/faiface/pixel"
@@ -9,13 +13,30 @@ import (
 	"golang.org/x/image/colornames"
 )
 
+var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
+
 const initPage = "http://localhost:8084/circleRectText.svg"
 
 func run() {
+	// Conditionally initialize profiler.
+	flag.Parse()
+	if *cpuprofile != "" {
+		f, err := os.Create(*cpuprofile)
+		if err != nil {
+			log.Fatal("could not create CPU profile: ", err)
+		}
+		if err := pprof.StartCPUProfile(f); err != nil {
+			log.Fatal("could not start CPU profile: ", err)
+		}
+		defer pprof.StopCPUProfile()
+	}
+
+	// Initialize windows.
 	cfg := pixelgl.WindowConfig{
 		Title:     "JankyBrowser",
 		Bounds:    pixel.R(0, 0, 1024, 768),
 		Resizable: true,
+		VSync:     true,
 	}
 	win, err := pixelgl.NewWindow(cfg)
 	if err != nil {
@@ -26,15 +47,18 @@ func run() {
 		Title:     "Devtools | JankyBrowser",
 		Bounds:    pixel.R(0, 0, 500, 500),
 		Resizable: true,
+		VSync:     true,
 	}
 	devtoolsWin, err := pixelgl.NewWindow(devtoolsCfg)
 	if err != nil {
 		panic(err)
 	}
 
+	// Initialize browser and devtools.
 	devtools := jankybrowser.NewDevtools(devtoolsWin)
 	browser := jankybrowser.NewBrowser(win, initPage, devtools)
 
+	// Main loop.
 	fps := time.Tick(time.Second / 60)
 	for !win.Closed() {
 		win.Clear(colornames.White)
@@ -89,7 +113,7 @@ func run() {
 		}
 
 		// Draw.
-		browser.Draw(win)
+		browser.Draw()
 		win.Update()
 		devtoolsWin.Update()
 

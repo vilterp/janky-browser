@@ -8,32 +8,38 @@ import (
 type Devtools struct {
 	win *pixelgl.Window
 
-	renderer   *ContentRenderer
-	domStrNode *dom.TextNode
+	renderer     *ContentRenderer
+	domGroupNode *dom.GroupNode
 }
 
 func NewDevtools(win *pixelgl.Window) *Devtools {
-	domStrNode := &dom.TextNode{}
+	domGroup := &dom.GroupNode{}
 	rootGroup := &dom.GroupNode{
-		TextNode: []*dom.TextNode{
-			domStrNode,
+		GroupNode: []*dom.GroupNode{
+			domGroup,
 		},
 	}
 
 	return &Devtools{
-		win:        win,
-		renderer:   NewContentRenderer(rootGroup),
-		domStrNode: domStrNode,
+		win:          win,
+		renderer:     NewContentRenderer(rootGroup),
+		domGroupNode: domGroup,
 	}
 }
 
 func (dt *Devtools) Draw(bp *BrowserPage) {
-	if bp.state != PageStateLoaded {
-		dt.domStrNode.Value = ""
-	} else {
-		dt.domStrNode.Value = dom.Format(bp.renderer.rootNode)
-	}
-	dt.domStrNode.Y = dt.win.Bounds().H() - 10
-
+	dt.drawDOM(bp)
 	dt.renderer.Draw(dt.win)
+}
+
+func (dt *Devtools) drawDOM(bp *BrowserPage) {
+	domStrNode := &dom.TextNode{}
+	domStrNode.Init()
+	if bp.state != PageStateLoaded {
+		domStrNode.Value = ""
+	} else {
+		domStrNode.Value = dom.Format(bp.renderer.rootNode)
+	}
+	domStrNode.Y = dt.win.Bounds().H() - 10
+	dt.domGroupNode.TextNode = []*dom.TextNode{domStrNode}
 }
