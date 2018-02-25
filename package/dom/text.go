@@ -56,6 +56,10 @@ func (tn *TextNode) Contains(pt pixel.Vec) bool {
 	return movedBounds.Contains(pt)
 }
 
+// TODO: support multiple font sizes
+const TextHeight = 13
+const CharWidth = 7
+
 var Atlas *text.Atlas
 
 func init() {
