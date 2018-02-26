@@ -5,12 +5,15 @@ import (
 	"strconv"
 
 	"github.com/faiface/pixel"
+	"github.com/vilterp/janky-browser/package/util"
 )
 
 // TODO: additional keyboard movement
 // - word boundaries on option+{left, right}
 
 type TextInputNode struct {
+	baseNode
+
 	// props
 	X         float64
 	Y         float64
@@ -208,10 +211,7 @@ func (tin *TextInputNode) ProcessLeftKey(shiftDown bool, superDown bool) {
 		tin.cursorPos = 0
 		return
 	}
-	tin.cursorPos = tin.cursorPos - 1
-	if tin.cursorPos < 0 {
-		tin.cursorPos = 0
-	}
+	tin.cursorPos = util.Clamp(0, len(tin.Value), tin.cursorPos-1)
 }
 
 func (tin *TextInputNode) ProcessRightKey(shiftDown bool, superDown bool) {
@@ -223,10 +223,7 @@ func (tin *TextInputNode) ProcessRightKey(shiftDown bool, superDown bool) {
 		tin.cursorPos = len(tin.Value)
 		return
 	}
-	tin.cursorPos = tin.cursorPos + 1
-	if tin.cursorPos > len(tin.Value) {
-		tin.cursorPos = len(tin.Value)
-	}
+	tin.cursorPos = util.Clamp(0, len(tin.Value), tin.cursorPos+1)
 }
 
 func (tin *TextInputNode) MaybeStartSelection(shiftDown bool) {
@@ -243,4 +240,14 @@ func (tin *TextInputNode) MaybeStartSelection(shiftDown bool) {
 
 func (tin *TextInputNode) CancelSelection() {
 	tin.selectionStart = nil
+}
+
+func (tin *TextInputNode) SelectAll() {
+	tin.cursorPos = len(tin.Value)
+	zero := 0
+	tin.selectionStart = &zero
+}
+
+func (tin *TextInputNode) GetBounds() pixel.Rect {
+	return tin.backgroundRect.GetBounds()
 }

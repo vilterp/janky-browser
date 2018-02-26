@@ -12,7 +12,7 @@ func TestPopHistory(t *testing.T) {
 	b := Browser{
 		history: []string{ex1},
 	}
-	_, err := b.PopHistory()
+	_, err := b.popHistory()
 	expectedErr := "can't go back; already on last page"
 	if err == nil || err.Error() != expectedErr {
 		t.Fatalf("expected %s; got %v", expectedErr, err)
@@ -21,7 +21,7 @@ func TestPopHistory(t *testing.T) {
 	b2 := Browser{
 		history: []string{ex1, ex2},
 	}
-	url, err := b2.PopHistory()
+	url, err := b2.popHistory()
 	if err != nil {
 		t.Fatalf("expected no err; got %v", err)
 	}

@@ -6,18 +6,22 @@ import (
 
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
+	"github.com/vilterp/janky-browser/package/util"
 	"golang.org/x/image/colornames"
 )
 
 type RectNode struct {
+	baseNode
+
 	XMLName xml.Name `xml:"rect"`
 
-	X      float64 `xml:"x,attr"`
-	Y      float64 `xml:"y,attr"`
-	Width  float64 `xml:"width,attr"`
-	Height float64 `xml:"height,attr"`
-	Fill   string  `xml:"fill,attr"`
-	Stroke string  `xml:"stroke,attr"`
+	X            float64 `xml:"x,attr"`
+	Y            float64 `xml:"y,attr"`
+	Width        float64 `xml:"width,attr"`
+	Height       float64 `xml:"height,attr"`
+	Fill         string  `xml:"fill,attr"`
+	Transparency float64 `xml:"transparency,attr"` // [0, 1]. TODO: this should really be in the fill itself.
+	Stroke       string  `xml:"stroke,attr"`
 }
 
 var _ Node = &RectNode{}
@@ -43,7 +47,7 @@ func (rn *RectNode) Draw(t pixel.Target) {
 	// Draw fill.
 	fillColor, ok := colornames.Map[rn.Fill]
 	if ok {
-		imd.Color = fillColor
+		imd.Color = util.WithTransparency(fillColor, rn.Transparency)
 		imd.Push(pixel.V(rn.X, rn.Y))
 		imd.Push(pixel.V(rn.X+rn.Width, rn.Y+rn.Height))
 		imd.Rectangle(0)
@@ -62,6 +66,18 @@ func (rn *RectNode) Draw(t pixel.Target) {
 }
 
 func (rn *RectNode) Contains(pt pixel.Vec) bool {
-	rect := pixel.R(rn.X, rn.Y, rn.X+rn.Width, rn.Y+rn.Height)
-	return rect.Contains(pt)
+	return rn.GetBounds().Contains(pt)
+}
+
+func (rn *RectNode) GetBounds() pixel.Rect {
+	return pixel.R(rn.X, rn.Y, rn.X+rn.Width, rn.Y+rn.Height)
+}
+
+func RectFromBounds(bounds pixel.Rect) *RectNode {
+	return &RectNode{
+		X:      bounds.Min.X,
+		Y:      bounds.Min.Y,
+		Width:  bounds.W(),
+		Height: bounds.H(),
+	}
 }

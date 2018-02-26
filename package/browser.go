@@ -3,6 +3,7 @@ package jankybrowser
 import (
 	"fmt"
 	"log"
+	"net/url"
 
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
@@ -11,11 +12,10 @@ import (
 
 type Browser struct {
 	window      *pixelgl.Window
+	devtools    *Devtools
 	currentPage *BrowserPage
 
 	history []string
-
-	newURL string
 
 	// Stuff for drawing the chrome.
 	// TODO: wrap this up in its own struct somehow.
@@ -28,7 +28,9 @@ type Browser struct {
 	errorText  *dom.TextNode
 }
 
-func NewBrowser(window *pixelgl.Window, initialURL string) *Browser {
+func NewBrowser(
+	window *pixelgl.Window, initialURL string, devtools *Devtools,
+) *Browser {
 	// TODO: maybe group chrome stuff into a custom element.
 	// Initialize nodes.
 	backButton := &dom.TextNode{
@@ -49,7 +51,8 @@ func NewBrowser(window *pixelgl.Window, initialURL string) *Browser {
 	}
 
 	b := &Browser{
-		window: window,
+		window:   window,
+		devtools: devtools,
 
 		// Save nodes so we can reference them.
 		backButton: backButton,
@@ -69,12 +72,15 @@ func NewBrowser(window *pixelgl.Window, initialURL string) *Browser {
 	return b
 }
 
-func (b *Browser) Draw(t pixel.Target) {
+func (b *Browser) Draw() {
 	// Update & draw URL bar.
-	b.DrawChrome(t)
+	b.DrawChrome(b.window)
 
 	// Draw page.
-	b.currentPage.Draw(t)
+	b.currentPage.Draw(b.window)
+
+	// Draw devtools.
+	b.devtools.Draw(b.currentPage)
 }
 
 // TODO: factor this out into its own DOMNode/Component which takes its own attributes
@@ -135,35 +141,47 @@ func (b *Browser) ProcessMouseEvents(pt pixel.Vec, mouseDown bool, mouseJustDown
 
 	navigateTo := b.currentPage.ProcessMouseEvents(pt, mouseDown, mouseJustDown)
 	if navigateTo != "" {
-		b.NavigateTo(navigateTo)
+		b.NavigateTo(b.resolveURL(navigateTo))
 	}
 }
 
-func (b *Browser) NavigateTo(url string) {
-	log.Println("navigate to", url)
-	b.newURL = url
-	b.currentPage = NewBrowserPage(url)
-	b.currentPage.Load()
-	b.UrlInput.Value = url
+func (b *Browser) resolveURL(unresolvedURL string) string {
+	parsed, err := url.Parse(unresolvedURL)
+	if err != nil {
+		return unresolvedURL
+	}
+	if parsed.Host == "" {
+		currentURL, _ := url.Parse(b.currentPage.url)
+		parsed.Scheme = currentURL.Scheme
+		parsed.Host = currentURL.Host
+	}
+	return parsed.String()
+}
 
-	b.history = append(b.history, url)
+func (b *Browser) NavigateTo(newURL string) {
+	log.Println("navigate to", newURL)
+	b.currentPage = NewBrowserPage(newURL)
+	b.currentPage.Load()
+	b.UrlInput.Value = newURL
+
+	b.history = append(b.history, newURL)
 }
 
 func (b *Browser) NavigateBack() error {
-	url, err := b.PopHistory()
+	toURL, err := b.popHistory()
 	if err != nil {
 		return err
 	}
-	b.NavigateTo(url)
+	b.NavigateTo(toURL)
 	return nil
 }
 
-func (b *Browser) PopHistory() (string, error) {
+func (b *Browser) popHistory() (string, error) {
 	if len(b.history) == 1 {
 		return "", fmt.Errorf("can't go back; already on last page")
 	}
 
-	url := b.history[len(b.history)-2]
+	popped := b.history[len(b.history)-2]
 	b.history = b.history[:len(b.history)-2]
-	return url, nil
+	return popped, nil
 }

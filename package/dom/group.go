@@ -7,10 +7,11 @@ import (
 )
 
 type GroupNode struct {
+	baseNode
+
 	XMLName xml.Name `xml:"g"`
 
 	Href string `xml:"href,attr"`
-
 	// TODO: this destroys ordering...
 	// not sure how to get it to understand an interface...
 	RectNode      []*RectNode      `xml:"rect"`
@@ -29,8 +30,15 @@ func (gn *GroupNode) Init() {
 	}
 }
 
-func (gn *GroupNode) Name() string             { return "g" }
-func (gn *GroupNode) Attrs() map[string]string { return make(map[string]string) }
+func (gn *GroupNode) Name() string { return "g" }
+
+func (gn *GroupNode) Attrs() map[string]string {
+	attrs := make(map[string]string)
+	if gn.Href != "" {
+		attrs["href"] = gn.Href
+	}
+	return attrs
+}
 
 func (gn *GroupNode) Children() []Node {
 	var ret []Node
@@ -68,4 +76,17 @@ func (gn *GroupNode) Contains(pt pixel.Vec) bool {
 		}
 	}
 	return false
+}
+
+func (gn *GroupNode) GetBounds() pixel.Rect {
+	// nah, don't want to start out at 0, 0...
+	rect := pixel.Rect{}
+	for idx, child := range gn.Children() {
+		if idx == 0 {
+			rect = child.GetBounds()
+			continue
+		}
+		rect = rect.Union(child.GetBounds())
+	}
+	return rect
 }

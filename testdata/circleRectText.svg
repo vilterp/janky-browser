@@ -1,10 +1,10 @@
 <g>
   <circle fill="red" radius="50" x="200" y="300" />
-  <g href="http://localhost:8081/justText.svg">
+  <g href="/justText.svg">
     <text value="Hello world" x="500" y="500" />
   </g>
   <rect fill="blue" stroke="black" height="100" width="200" x="500" y="600" />
-  <g href="http://localhost:8081/justCircle.svg">
+  <g href="/justCircle.svg">
     <text value="Go to just circle" x="800" y="400" />
   </g>
 </g>

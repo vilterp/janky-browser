@@ -10,6 +10,8 @@ import (
 )
 
 type TextNode struct {
+	baseNode
+
 	XMLName xml.Name `xml:"text"`
 
 	Value string  `xml:"value,attr"`
@@ -56,15 +58,16 @@ func (tn *TextNode) Contains(pt pixel.Vec) bool {
 	return movedBounds.Contains(pt)
 }
 
+// TODO: support multiple font sizes
+const TextHeight = 13
+const CharWidth = 7
+
 var Atlas *text.Atlas
 
 func init() {
-	//fontName := "Roboto-Regular.ttf"
-	//face, err := LoadTTF(fontName, 15)
-	//if err != nil {
-	//	panic(err)
-	//}
-	//Atlas = text.NewAtlas(face, text.ASCII)
-	//log.Println("loaded font ")
 	Atlas = text.Atlas7x13
+}
+
+func (tn *TextNode) GetBounds() pixel.Rect {
+	return tn.txt.Bounds().Moved(pixel.V(tn.X, tn.Y))
 }

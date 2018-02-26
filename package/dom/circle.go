@@ -10,6 +10,8 @@ import (
 )
 
 type CircleNode struct {
+	baseNode
+
 	XMLName xml.Name `xml:"circle"`
 
 	Radius float64 `xml:"radius,attr"`
@@ -53,4 +55,8 @@ func (cn *CircleNode) Contains(pt pixel.Vec) bool {
 	center := pixel.V(cn.X, cn.Y)
 	diff := pt.Sub(center)
 	return diff.Len() <= cn.Radius
+}
+
+func (cn *CircleNode) GetBounds() pixel.Rect {
+	return pixel.R(cn.X-cn.Radius, cn.Y-cn.Radius, cn.X+cn.Radius, cn.Y+cn.Radius)
 }

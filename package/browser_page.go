@@ -3,7 +3,6 @@ package jankybrowser
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"sync"
 
@@ -93,7 +92,6 @@ func (bp *BrowserPage) doLoad() {
 		node = &dom.GroupNode{}
 	}
 	bp.renderer = NewContentRenderer(node)
-	log.Println("parsed DOM tree:", dom.Format(bp.renderer.rootNode))
 }
 
 func (bp *BrowserPage) Draw(t pixel.Target) {
@@ -113,6 +111,13 @@ func (bp *BrowserPage) Draw(t pixel.Target) {
 	}
 }
 
+func (bp *BrowserPage) numNodes() int {
+	if bp.state != PageStateLoaded {
+		return 0
+	}
+	return len(dom.GetAllNodes(bp.renderer.rootNode))
+}
+
 func (bp *BrowserPage) ProcessMouseEvents(pt pixel.Vec, mouseDown bool, mouseJustDown bool) string {
 	if bp.state != PageStateLoaded {
 		return ""
@@ -125,10 +130,6 @@ func (bp *BrowserPage) ProcessMouseEvents(pt pixel.Vec, mouseDown bool, mouseJus
 
 	var navigateTo string
 	if len(clickedNodes) > 0 {
-		//var hoveredNodeStrs []string
-		//for _, hoveredNode := range hoveredNodes {
-		//	hoveredNodeStrs = append(hoveredNodeStrs, dom.Format(hoveredNode))
-		//}
 		for _, hoveredNode := range clickedNodes {
 			switch n := hoveredNode.(type) {
 			case *dom.GroupNode:

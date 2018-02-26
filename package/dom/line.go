@@ -9,11 +9,12 @@ import (
 )
 
 type LineNode struct {
-	X1 float64
-	Y1 float64
-	X2 float64
-	Y2 float64
+	baseNode
 
+	X1     float64
+	Y1     float64
+	X2     float64
+	Y2     float64
 	Stroke string
 }
 
@@ -47,4 +48,9 @@ func (ln *LineNode) Draw(t pixel.Target) {
 
 func (ln *LineNode) Contains(pixel.Vec) bool {
 	return false
+}
+
+func (ln *LineNode) GetBounds() pixel.Rect {
+	rect := pixel.R(ln.X1, ln.Y1, ln.X2, ln.Y2)
+	return rect.Norm()
 }
