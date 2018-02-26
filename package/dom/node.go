@@ -13,6 +13,16 @@ type Node interface {
 	Draw(target pixel.Target)
 	Contains(pixel.Vec) bool
 	GetBounds() pixel.Rect
+
+	Events() *EventHandlers
+}
+
+type baseNode struct {
+	events EventHandlers
+}
+
+func (bn *baseNode) Events() *EventHandlers {
+	return &bn.events
 }
 
 func GetAllNodes(tree Node) []Node {
@@ -40,9 +50,13 @@ func doVisit(
 	afterChildren func(n Node, depth int),
 	depth int,
 ) {
-	beforeChildren(tree, depth)
+	if beforeChildren != nil {
+		beforeChildren(tree, depth)
+	}
 	for _, child := range tree.Children() {
 		doVisit(child, beforeChildren, afterChildren, depth+1)
 	}
-	afterChildren(tree, depth)
+	if afterChildren != nil {
+		afterChildren(tree, depth)
+	}
 }

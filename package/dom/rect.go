@@ -11,6 +11,8 @@ import (
 )
 
 type RectNode struct {
+	baseNode
+
 	XMLName xml.Name `xml:"rect"`
 
 	X            float64 `xml:"x,attr"`

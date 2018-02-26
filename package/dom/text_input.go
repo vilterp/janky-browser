@@ -12,6 +12,8 @@ import (
 // - word boundaries on option+{left, right}
 
 type TextInputNode struct {
+	baseNode
+
 	// props
 	X         float64
 	Y         float64

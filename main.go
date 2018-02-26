@@ -70,6 +70,11 @@ func run() {
 			win.Pressed(pixelgl.MouseButton1),
 			win.JustPressed(pixelgl.MouseButton1),
 		)
+		devtools.ProcessMouseEvents(
+			devtoolsWin.MousePosition(),
+			devtoolsWin.Pressed(pixelgl.MouseButton1),
+			devtoolsWin.JustPressed(pixelgl.MouseButton1),
+		)
 
 		// Handle keyboard events.
 		typed := win.Typed()
@@ -90,26 +95,14 @@ func run() {
 			browser.UrlInput.SelectAll()
 		}
 		if win.JustPressed(pixelgl.KeyTab) || win.JustPressed(pixelgl.KeyEscape) {
-			if browser.UrlInput.Focused {
-				browser.UrlInput.UnFocus()
-			} else {
-				browser.UnHighlightNode()
-			}
+			browser.UrlInput.UnFocus()
 		}
 		shiftDown := win.Pressed(pixelgl.KeyLeftShift) || win.Pressed(pixelgl.KeyRightShift)
 		if win.JustPressed(pixelgl.KeyLeft) || win.Repeated(pixelgl.KeyLeft) {
-			if browser.UrlInput.Focused {
-				browser.UrlInput.ProcessLeftKey(shiftDown, superDown)
-			} else {
-				browser.HighlightPrevNode()
-			}
+			browser.UrlInput.ProcessLeftKey(shiftDown, superDown)
 		}
 		if win.JustPressed(pixelgl.KeyRight) || win.Repeated(pixelgl.KeyRight) {
-			if browser.UrlInput.Focused {
-				browser.UrlInput.ProcessRightKey(shiftDown, superDown)
-			} else {
-				browser.HighlightNextNode()
-			}
+			browser.UrlInput.ProcessRightKey(shiftDown, superDown)
 		}
 
 		// Draw.

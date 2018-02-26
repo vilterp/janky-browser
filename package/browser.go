@@ -185,15 +185,3 @@ func (b *Browser) popHistory() (string, error) {
 	b.history = b.history[:len(b.history)-2]
 	return popped, nil
 }
-
-func (b *Browser) UnHighlightNode() {
-	b.currentPage.UnHighlightNode()
-}
-
-func (b *Browser) HighlightNextNode() {
-	b.currentPage.HighlightNextNode()
-}
-
-func (b *Browser) HighlightPrevNode() {
-	b.currentPage.HighlightPrevNode()
-}

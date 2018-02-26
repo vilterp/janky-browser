@@ -10,6 +10,8 @@ import (
 )
 
 type CircleNode struct {
+	baseNode
+
 	XMLName xml.Name `xml:"circle"`
 
 	Radius float64 `xml:"radius,attr"`

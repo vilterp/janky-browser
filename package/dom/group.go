@@ -7,10 +7,11 @@ import (
 )
 
 type GroupNode struct {
+	baseNode
+
 	XMLName xml.Name `xml:"g"`
 
 	Href string `xml:"href,attr"`
-
 	// TODO: this destroys ordering...
 	// not sure how to get it to understand an interface...
 	RectNode      []*RectNode      `xml:"rect"`
@@ -29,8 +30,15 @@ func (gn *GroupNode) Init() {
 	}
 }
 
-func (gn *GroupNode) Name() string             { return "g" }
-func (gn *GroupNode) Attrs() map[string]string { return make(map[string]string) }
+func (gn *GroupNode) Name() string { return "g" }
+
+func (gn *GroupNode) Attrs() map[string]string {
+	attrs := make(map[string]string)
+	if gn.Href != "" {
+		attrs["href"] = gn.Href
+	}
+	return attrs
+}
 
 func (gn *GroupNode) Children() []Node {
 	var ret []Node

@@ -9,11 +9,12 @@ import (
 )
 
 type LineNode struct {
-	X1 float64
-	Y1 float64
-	X2 float64
-	Y2 float64
+	baseNode
 
+	X1     float64
+	Y1     float64
+	X2     float64
+	Y2     float64
 	Stroke string
 }
 

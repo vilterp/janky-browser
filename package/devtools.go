@@ -2,7 +2,9 @@ package jankybrowser
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/vilterp/janky-browser/package/dom"
 )
@@ -29,12 +31,14 @@ func NewDevtools(win *pixelgl.Window) *Devtools {
 	}
 }
 
+func (dt *Devtools) ProcessMouseEvents(pt pixel.Vec, mouseDown bool, mouseJustDown bool) {
+	dt.renderer.processClickState(pt, mouseDown, mouseJustDown)
+}
+
 func (dt *Devtools) Draw(bp *BrowserPage) {
 	dt.drawDOM(bp)
 	dt.renderer.Draw(dt.win)
 }
-
-const indent = dom.CharWidth * 2
 
 func (dt *Devtools) drawDOM(bp *BrowserPage) {
 	dt.domGroupNode.TextNode = nil
@@ -43,26 +47,47 @@ func (dt *Devtools) drawDOM(bp *BrowserPage) {
 		return
 	}
 
+	// TODO: figure out a way to DRY this up...
 	line := 0
 	dom.Visit(
 		bp.renderer.rootNode,
 		func(n dom.Node, depth int) {
-			dt.domGroupNode.TextNode = append(dt.domGroupNode.TextNode, &dom.TextNode{
+			indent := strings.Repeat("  ", depth)
+			textNode := &dom.TextNode{
 				Y:     dt.win.Bounds().H() - float64((line+1)*dom.TextHeight),
-				X:     float64(depth * indent),
-				Value: dom.FormatWithoutChildren(n),
-			})
+				Value: fmt.Sprintf("%s%s", indent, dom.FormatWithoutChildren(n)),
+			}
+			if bp.renderer.highlightedNode == n {
+				textNode.Fill = "red"
+			}
+			textNode.Events().OnMouseOver = func() {
+				bp.renderer.SetHighlightedNode(n)
+			}
+			textNode.Events().OnMouseOut = func() {
+				bp.renderer.SetHighlightedNode(nil)
+			}
+			dt.domGroupNode.TextNode = append(dt.domGroupNode.TextNode, textNode)
 			line++
 		},
 		func(n dom.Node, depth int) {
 			if len(n.Children()) == 0 {
 				return
 			}
-			dt.domGroupNode.TextNode = append(dt.domGroupNode.TextNode, &dom.TextNode{
+			indent := strings.Repeat("  ", depth)
+			textNode := &dom.TextNode{
 				Y:     dt.win.Bounds().H() - float64((line+1)*dom.TextHeight),
-				X:     float64(depth * indent),
-				Value: fmt.Sprintf("</%s>", n.Name()),
-			})
+				Value: fmt.Sprintf("%s</%s>", indent, n.Name()),
+			}
+			if bp.renderer.highlightedNode == n {
+				textNode.Fill = "red"
+			}
+			textNode.Events().OnMouseOver = func() {
+				bp.renderer.SetHighlightedNode(n)
+			}
+			textNode.Events().OnMouseOut = func() {
+				bp.renderer.SetHighlightedNode(nil)
+			}
+			dt.domGroupNode.TextNode = append(dt.domGroupNode.TextNode, textNode)
 			line++
 		},
 	)

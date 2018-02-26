@@ -10,6 +10,8 @@ import (
 )
 
 type TextNode struct {
+	baseNode
+
 	XMLName xml.Name `xml:"text"`
 
 	Value string  `xml:"value,attr"`
