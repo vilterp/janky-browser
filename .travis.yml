@@ -4,6 +4,5 @@ go:
 install:
 - sudo apt-get -qq update
 - sudo apt-get install -y xorg-dev
-- make deps
 script:
-- make
+- go build .
