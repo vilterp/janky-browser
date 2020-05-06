@@ -4,5 +4,6 @@ go:
 install:
 - sudo apt-get -qq update
 - sudo apt-get install -y xorg-dev
+- go mod download
 script:
 - go build .
