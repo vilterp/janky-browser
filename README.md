@@ -1,4 +1,4 @@
-# JankyBrowser ![travis build](https://travis-ci.org/vilterp/janky-browser.svg?branch=master)
+# JankyBrowser
 
 A simple browser for pedagogical purposes. It only renders a very small SVG-like
 XML dialect; `testdata/` contains some example files.
