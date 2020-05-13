@@ -2,6 +2,7 @@ package dom
 
 import (
 	"encoding/xml"
+	"fmt"
 	"image"
 	"strconv"
 
@@ -53,9 +54,11 @@ func (rn *RectNode) Draw(gc draw2d.GraphicContext) {
 
 	// Draw stroke.
 	strokeColor, ok := colornames.Map[rn.Stroke]
+	fmt.Println("stroke", strokeColor, ok)
 	if ok {
 		gc.SetStrokeColor(strokeColor)
 		draw2dkit.Rectangle(gc, rn.X, rn.Y, rn.X+rn.Width, rn.Y+rn.Height)
+		fmt.Println("rectangle", rn.X, rn.Y, rn.X+rn.Width, rn.Y+rn.Height)
 		gc.Stroke()
 	}
 }

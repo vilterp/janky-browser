@@ -84,7 +84,7 @@ func (tin *TextInputNode) Draw(gc draw2d.GraphicContext) {
 	if tin.Focused {
 		tin.backgroundRect.Stroke = "black"
 	} else {
-		tin.backgroundRect.Stroke = ""
+		tin.backgroundRect.Stroke = "grey"
 	}
 
 	textStartX := tin.X + 5

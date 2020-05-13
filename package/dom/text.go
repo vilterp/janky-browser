@@ -61,7 +61,7 @@ func (tn *TextNode) Contains(pt image.Point) bool {
 }
 
 // TODO: support multiple font sizes
-const TextHeight = 13
+const TextHeight = 20
 
 func (tn *TextNode) GetBounds() image.Rectangle {
 	return tn.bounds

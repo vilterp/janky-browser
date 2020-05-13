@@ -26,7 +26,7 @@ func main() {
 	driver.Main(func(curScreen screen.Screen) {
 		draw2d.SetFontFolder("./resource/font")
 
-		initialSize := image.Pt(800, 800)
+		initialSize := image.Pt(2000, 800)
 
 		window, err := curScreen.NewWindow(&screen.NewWindowOptions{
 			Title:  "Janky Browser",

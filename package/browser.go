@@ -85,7 +85,7 @@ func (b *Browser) drawChrome(gc draw2d.GraphicContext) {
 	b.currentPage.mu.RLock()
 	defer b.currentPage.mu.RUnlock()
 
-	const urlBarStart = 90
+	const urlBarStart = 170
 
 	// Update URL input.
 	if b.UrlInput.Value == b.currentPage.url {
@@ -95,12 +95,12 @@ func (b *Browser) drawChrome(gc draw2d.GraphicContext) {
 	}
 	b.UrlInput.Width = float64(b.window.Size.X - urlBarStart + 5)
 	b.UrlInput.X = urlBarStart
-	b.UrlInput.Y = float64(b.window.Size.Y - 30)
+	b.UrlInput.Y = 30
 
 	// Update status text.
 	b.stateText.Value = StateNames[b.currentPage.state]
-	b.stateText.X = 45
-	b.stateText.Y = float64(b.window.Size.Y - 20)
+	b.stateText.X = 80
+	b.stateText.Y = 30
 
 	// Update back button.
 	if len(b.history) > 1 {
@@ -109,16 +109,17 @@ func (b *Browser) drawChrome(gc draw2d.GraphicContext) {
 		b.backButton.Fill = "grey"
 	}
 	b.backButton.X = 10
-	b.backButton.Y = float64(b.window.Size.Y - 20)
+	b.backButton.Y = 30
 
 	// Update error text.
 	errorText := ""
 	if b.currentPage.state == PageStateError {
 		errorText = b.currentPage.loadError.Error()
 	}
+	b.errorText.Fill = "red"
 	b.errorText.Value = errorText
-	b.errorText.X = 20
-	b.errorText.Y = float64(b.window.Size.Y - 50)
+	b.errorText.X = 10
+	b.errorText.Y = 80
 
 	b.chromeContentRenderer.Draw(gc)
 }
