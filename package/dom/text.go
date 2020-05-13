@@ -39,7 +39,7 @@ func (tn *TextNode) Attrs() map[string]string {
 func (tn *TextNode) Init() {}
 
 func (tn *TextNode) Draw(gc draw2d.GraphicContext) {
-	gc.SetFontData(draw2d.FontData{Name: "luxi", Family: draw2d.FontFamilyMono, Style: draw2d.FontStyleBold | draw2d.FontStyleItalic})
+	gc.SetFontData(draw2d.FontData{Name: "luxi", Family: draw2d.FontFamilyMono, Style: 0})
 	// TODO: configurable font size and color
 	gc.SetFontSize(TextHeight)
 

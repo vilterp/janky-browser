@@ -3,9 +3,12 @@ package main
 import (
 	"fmt"
 	"image"
+	"image/color"
 	"log"
 
+	"github.com/llgcode/draw2d"
 	"github.com/llgcode/draw2d/draw2dimg"
+	"github.com/llgcode/draw2d/draw2dkit"
 	jankybrowser "github.com/vilterp/janky-browser/package"
 	"github.com/vilterp/janky-browser/package/util"
 	"golang.org/x/exp/shiny/driver"
@@ -21,6 +24,8 @@ const initPage = "http://localhost:8084/circleRectText.svg"
 
 func main() {
 	driver.Main(func(curScreen screen.Screen) {
+		draw2d.SetFontFolder("./resource/font")
+
 		initialSize := image.Pt(800, 800)
 
 		window, err := curScreen.NewWindow(&screen.NewWindowOptions{
@@ -53,6 +58,9 @@ func main() {
 				}
 				img := buf.RGBA()
 				gc := draw2dimg.NewGraphicContext(img)
+				gc.SetFillColor(color.White)
+				draw2dkit.Rectangle(gc, 0, 0, float64(winWrap.Size.X), float64(winWrap.Size.Y))
+				gc.Fill()
 
 				browser.Draw(gc)
 
@@ -96,6 +104,10 @@ func main() {
 					browser.UrlInput.ProcessRightKey(shiftDown, superDown)
 				}
 			case size.Event:
+				// this implements x'ing out
+				if tEvt.Size() == image.Pt(0, 0) {
+					return
+				}
 				winWrap.Size = tEvt.Size()
 			case lifecycle.Event:
 				if tEvt.To == lifecycle.StageDead {
