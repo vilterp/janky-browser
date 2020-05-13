@@ -2,10 +2,10 @@ package dom
 
 import (
 	"encoding/xml"
+	"image"
 	"strconv"
 
-	"github.com/faiface/pixel"
-	"github.com/faiface/pixel/text"
+	"github.com/llgcode/draw2d"
 	"golang.org/x/image/colornames"
 )
 
@@ -19,7 +19,7 @@ type TextNode struct {
 	Y     float64 `xml:"y,attr"`
 	Fill  string  `xml:"fill,attr"`
 
-	txt *text.Text
+	bounds image.Rectangle
 }
 
 var _ Node = &TextNode{}
@@ -36,38 +36,33 @@ func (tn *TextNode) Attrs() map[string]string {
 	}
 }
 
-func (tn *TextNode) Init() {
-	tn.txt = text.New(pixel.V(0, 0), Atlas)
-}
+func (tn *TextNode) Init() {}
 
-func (tn *TextNode) Draw(t pixel.Target) {
+func (tn *TextNode) Draw(gc draw2d.GraphicContext) {
+	gc.SetFontData(draw2d.FontData{Name: "luxi", Family: draw2d.FontFamilyMono, Style: draw2d.FontStyleBold | draw2d.FontStyleItalic})
+	// TODO: configurable font size and color
+	gc.SetFontSize(TextHeight)
+
 	color, ok := colornames.Map[tn.Fill]
 	if ok {
-		tn.txt.Color = color
+		gc.SetFillColor(color)
 	} else {
-		tn.txt.Color = colornames.Black
+		gc.SetFillColor(image.Black)
 	}
-	tn.txt.Clear()
-	tn.txt.WriteString(tn.Value)
-	tn.txt.Draw(t, pixel.IM.Moved(pixel.V(tn.X, tn.Y)))
+
+	gc.FillStringAt(tn.Value, tn.X, tn.Y)
+	// TODO: uh... what do these numbers mean?
+	left, top, right, bottom := gc.GetStringBounds(tn.Value)
+	tn.bounds = image.Rect(int(left), int(top), int(right), int(bottom))
 }
 
-func (tn *TextNode) Contains(pt pixel.Vec) bool {
-	txtBounds := tn.txt.Bounds()
-	movedBounds := txtBounds.Moved(pixel.V(tn.X, tn.Y))
-	return movedBounds.Contains(pt)
+func (tn *TextNode) Contains(pt image.Point) bool {
+	return pt.In(tn.bounds)
 }
 
 // TODO: support multiple font sizes
 const TextHeight = 13
-const CharWidth = 7
 
-var Atlas *text.Atlas
-
-func init() {
-	Atlas = text.Atlas7x13
-}
-
-func (tn *TextNode) GetBounds() pixel.Rect {
-	return tn.txt.Bounds().Moved(pixel.V(tn.X, tn.Y))
+func (tn *TextNode) GetBounds() image.Rectangle {
+	return tn.bounds
 }

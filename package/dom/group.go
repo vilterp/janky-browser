@@ -2,8 +2,9 @@ package dom
 
 import (
 	"encoding/xml"
+	"image"
 
-	"github.com/faiface/pixel"
+	"github.com/llgcode/draw2d"
 )
 
 type GroupNode struct {
@@ -62,14 +63,14 @@ func (gn *GroupNode) Children() []Node {
 	}
 	return ret
 }
-func (gn *GroupNode) Draw(t pixel.Target) {
+func (gn *GroupNode) Draw(gc draw2d.GraphicContext) {
 	for _, child := range gn.Children() {
 		// TODO: draw witn transform
-		child.Draw(t)
+		child.Draw(gc)
 	}
 }
 
-func (gn *GroupNode) Contains(pt pixel.Vec) bool {
+func (gn *GroupNode) Contains(pt image.Point) bool {
 	for _, child := range gn.Children() {
 		if child.Contains(pt) {
 			return true
@@ -78,9 +79,9 @@ func (gn *GroupNode) Contains(pt pixel.Vec) bool {
 	return false
 }
 
-func (gn *GroupNode) GetBounds() pixel.Rect {
+func (gn *GroupNode) GetBounds() image.Rectangle {
 	// nah, don't want to start out at 0, 0...
-	rect := pixel.Rect{}
+	rect := image.Rectangle{}
 	for idx, child := range gn.Children() {
 		if idx == 0 {
 			rect = child.GetBounds()

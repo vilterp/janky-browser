@@ -2,17 +2,17 @@ package jankybrowser
 
 import (
 	"fmt"
+	"image"
 	"log"
 	"net/url"
 
-	"github.com/faiface/pixel"
-	"github.com/faiface/pixel/pixelgl"
+	"github.com/llgcode/draw2d"
 	"github.com/vilterp/janky-browser/package/dom"
+	"github.com/vilterp/janky-browser/package/util"
 )
 
 type Browser struct {
-	window      *pixelgl.Window
-	devtools    *Devtools
+	window      *util.Window
 	currentPage *BrowserPage
 
 	history []string
@@ -29,7 +29,7 @@ type Browser struct {
 }
 
 func NewBrowser(
-	window *pixelgl.Window, initialURL string, devtools *Devtools,
+	window *util.Window, initialURL string,
 ) *Browser {
 	// TODO: maybe group chrome stuff into a custom element.
 	// Initialize nodes.
@@ -51,8 +51,7 @@ func NewBrowser(
 	}
 
 	b := &Browser{
-		window:   window,
-		devtools: devtools,
+		window: window,
 
 		// Save nodes so we can reference them.
 		backButton: backButton,
@@ -72,20 +71,17 @@ func NewBrowser(
 	return b
 }
 
-func (b *Browser) Draw() {
+func (b *Browser) Draw(gc draw2d.GraphicContext) {
 	// Update & draw URL bar.
-	b.DrawChrome(b.window)
+	b.drawChrome(gc)
 
 	// Draw page.
-	b.currentPage.Draw(b.window)
-
-	// Draw devtools.
-	b.devtools.Draw(b.currentPage)
+	b.currentPage.Draw(gc)
 }
 
 // TODO: factor this out into its own DOMNode/Component which takes its own attributes
 // and emits its own events... once we have those concepts...
-func (b *Browser) DrawChrome(t pixel.Target) {
+func (b *Browser) drawChrome(gc draw2d.GraphicContext) {
 	b.currentPage.mu.RLock()
 	defer b.currentPage.mu.RUnlock()
 
@@ -97,14 +93,14 @@ func (b *Browser) DrawChrome(t pixel.Target) {
 	} else {
 		b.UrlInput.TextColor = "blue"
 	}
-	b.UrlInput.Width = b.window.Bounds().W() - urlBarStart + 5
+	b.UrlInput.Width = float64(b.window.Size.X - urlBarStart + 5)
 	b.UrlInput.X = urlBarStart
-	b.UrlInput.Y = b.window.Bounds().H() - 30
+	b.UrlInput.Y = float64(b.window.Size.Y - 30)
 
 	// Update status text.
 	b.stateText.Value = StateNames[b.currentPage.state]
 	b.stateText.X = 45
-	b.stateText.Y = b.window.Bounds().H() - 20
+	b.stateText.Y = float64(b.window.Size.Y - 20)
 
 	// Update back button.
 	if len(b.history) > 1 {
@@ -113,7 +109,7 @@ func (b *Browser) DrawChrome(t pixel.Target) {
 		b.backButton.Fill = "grey"
 	}
 	b.backButton.X = 10
-	b.backButton.Y = b.window.Bounds().H() - 20
+	b.backButton.Y = float64(b.window.Size.Y - 20)
 
 	// Update error text.
 	errorText := ""
@@ -122,12 +118,12 @@ func (b *Browser) DrawChrome(t pixel.Target) {
 	}
 	b.errorText.Value = errorText
 	b.errorText.X = 20
-	b.errorText.Y = b.window.Bounds().H() - 50
+	b.errorText.Y = float64(b.window.Size.Y - 50)
 
-	b.chromeContentRenderer.Draw(t)
+	b.chromeContentRenderer.Draw(gc)
 }
 
-func (b *Browser) ProcessMouseEvents(pt pixel.Vec, mouseDown bool, mouseJustDown bool) {
+func (b *Browser) ProcessMouseEvents(pt image.Point, mouseDown bool, mouseJustDown bool) {
 	b.currentPage.mu.RLock()
 	defer b.currentPage.mu.RUnlock()
 

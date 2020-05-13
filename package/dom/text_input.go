@@ -2,9 +2,10 @@ package dom
 
 import (
 	"fmt"
+	"image"
 	"strconv"
 
-	"github.com/faiface/pixel"
+	"github.com/llgcode/draw2d"
 	"github.com/vilterp/janky-browser/package/util"
 )
 
@@ -74,7 +75,7 @@ func (tin *TextInputNode) Attrs() map[string]string {
 	}
 }
 
-func (tin *TextInputNode) Draw(t pixel.Target) {
+func (tin *TextInputNode) Draw(gc draw2d.GraphicContext) {
 	// Update background rect.
 	tin.backgroundRect.Width = tin.Width
 	tin.backgroundRect.X = tin.X
@@ -119,10 +120,10 @@ func (tin *TextInputNode) Draw(t pixel.Target) {
 		tin.selectionRect.Height = 13
 	}
 
-	tin.group.Draw(t)
+	tin.group.Draw(gc)
 }
 
-func (tin *TextInputNode) Contains(pt pixel.Vec) bool {
+func (tin *TextInputNode) Contains(pt image.Point) bool {
 	return tin.backgroundRect.Contains(pt)
 }
 
@@ -248,6 +249,6 @@ func (tin *TextInputNode) SelectAll() {
 	tin.selectionStart = &zero
 }
 
-func (tin *TextInputNode) GetBounds() pixel.Rect {
+func (tin *TextInputNode) GetBounds() image.Rectangle {
 	return tin.backgroundRect.GetBounds()
 }

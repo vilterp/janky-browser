@@ -1,10 +1,12 @@
 package dom
 
-import "github.com/faiface/pixel"
+import (
+	"image"
+)
 
 // TODO: really, Pick should return a tree, because
 // you can be over multiple things at once.
-func Pick(node Node, pt pixel.Vec) []Node {
+func Pick(node Node, pt image.Point) []Node {
 	switch node.(type) {
 	case *RectNode, *CircleNode, *TextNode:
 		if node.Contains(pt) {

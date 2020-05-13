@@ -2,11 +2,12 @@ package jankybrowser
 
 import (
 	"fmt"
+	"image"
 	"io/ioutil"
 	"net/http"
 	"sync"
 
-	"github.com/faiface/pixel"
+	"github.com/llgcode/draw2d"
 	"github.com/vilterp/janky-browser/package/dom"
 )
 
@@ -94,7 +95,7 @@ func (bp *BrowserPage) doLoad() {
 	bp.renderer = NewContentRenderer(node)
 }
 
-func (bp *BrowserPage) Draw(t pixel.Target) {
+func (bp *BrowserPage) Draw(gc draw2d.GraphicContext) {
 	bp.mu.RLock()
 	defer bp.mu.RUnlock()
 
@@ -104,7 +105,7 @@ func (bp *BrowserPage) Draw(t pixel.Target) {
 	case PageStateLoading:
 		break
 	case PageStateLoaded:
-		bp.renderer.Draw(t)
+		bp.renderer.Draw(gc)
 	case PageStateError:
 		// TODO: render error state
 		// make a <text> element and an error DOM and use it!
@@ -118,7 +119,7 @@ func (bp *BrowserPage) numNodes() int {
 	return len(dom.GetAllNodes(bp.renderer.rootNode))
 }
 
-func (bp *BrowserPage) ProcessMouseEvents(pt pixel.Vec, mouseDown bool, mouseJustDown bool) string {
+func (bp *BrowserPage) ProcessMouseEvents(pt image.Point, mouseDown bool, mouseJustDown bool) string {
 	if bp.state != PageStateLoaded {
 		return ""
 	}
