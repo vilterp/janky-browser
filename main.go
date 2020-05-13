@@ -2,6 +2,8 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	"image"
 	"log"
 	"os"
 	"runtime/pprof"
@@ -9,8 +11,16 @@ import (
 
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
-	"github.com/vilterp/janky-browser/package"
+	"github.com/llgcode/draw2d/draw2dimg"
+	"github.com/llgcode/draw2d/draw2dkit"
+	jankybrowser "github.com/vilterp/janky-browser/package"
+	"golang.org/x/exp/shiny/driver"
+	"golang.org/x/exp/shiny/screen"
 	"golang.org/x/image/colornames"
+	"golang.org/x/mobile/event/key"
+	"golang.org/x/mobile/event/lifecycle"
+	"golang.org/x/mobile/event/paint"
+	"golang.org/x/mobile/event/size"
 )
 
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
@@ -115,5 +125,47 @@ func run() {
 }
 
 func main() {
-	pixelgl.Run(run)
+	driver.Main(func(curScreen screen.Screen) {
+		window, err := curScreen.NewWindow(&screen.NewWindowOptions{
+			Title:  "Janky Browser",
+			Width:  800,
+			Height: 800,
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer window.Release()
+
+		sz := image.Pt(800, 800)
+		for {
+			evt := window.NextEvent()
+
+			fmt.Printf("event: %#v\n", evt)
+
+			switch tEvt := evt.(type) {
+			case paint.Event:
+				buf, err := curScreen.NewBuffer(sz)
+				if err != nil {
+					log.Fatal(err)
+				}
+				img := buf.RGBA()
+				gc := draw2dimg.NewGraphicContext(img)
+				draw2dkit.Circle(gc, 50, 50, 10)
+				gc.SetFillColor(colornames.White)
+				gc.Fill()
+				window.Upload(image.Point{}, buf, buf.Bounds())
+				window.Publish()
+				buf.Release()
+			case key.Event:
+				fmt.Println("rune:", string(tEvt.Rune))
+			case size.Event:
+				sz = tEvt.Size()
+			case lifecycle.Event:
+				if tEvt.To == lifecycle.StageDead {
+					return
+				}
+			}
+		}
+	})
+	//pixelgl.Run(run)
 }
