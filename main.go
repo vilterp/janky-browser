@@ -20,7 +20,7 @@ import (
 	"golang.org/x/mobile/event/size"
 )
 
-const initPage = "http://localhost:8084/circleRectText.svg"
+const initPage = "http://localhost:8080/circleRectText.svg"
 
 func main() {
 	driver.Main(func(curScreen screen.Screen) {
@@ -48,8 +48,6 @@ func main() {
 		for {
 			evt := window.NextEvent()
 
-			fmt.Printf("event: %#v\n", evt)
-
 			switch tEvt := evt.(type) {
 			case paint.Event:
 				buf, err := curScreen.NewBuffer(winWrap.Size)
@@ -69,6 +67,7 @@ func main() {
 				buf.Release()
 			case mouse.Event:
 				// Handle mouse events.
+				fmt.Println("mouse evt")
 				browser.ProcessMouseEvents(
 					image.Pt(int(tEvt.X), int(tEvt.Y)),
 					tEvt.Direction == mouse.DirPress,
