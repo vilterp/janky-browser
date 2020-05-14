@@ -66,11 +66,12 @@ func main() {
 				window.Publish()
 				buf.Release()
 			case mouse.Event:
+				log.Printf("mouse event: %#v", tEvt)
 				// Handle mouse events.
 				browser.ProcessMouseEvents(
 					image.Pt(int(tEvt.X), int(tEvt.Y)),
 					tEvt.Direction == mouse.DirPress,
-					true, // ???
+					tEvt.Direction == mouse.DirRelease, // ???
 				)
 				// TODO: only repaint widgets if they're dirty... etc etc
 				window.Send(paint.Event{})

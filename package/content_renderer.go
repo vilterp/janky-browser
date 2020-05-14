@@ -2,6 +2,7 @@ package jankybrowser
 
 import (
 	"image"
+	"log"
 
 	"github.com/llgcode/draw2d"
 	"github.com/vilterp/janky-browser/package/dom"
@@ -34,6 +35,7 @@ func (cr *ContentRenderer) processClickState(
 	pt image.Point, mouseDown bool, mouseJustDown bool,
 ) []dom.Node {
 	hoveredNodes := cr.GetHoveredNodes(pt)
+	//fmt.Println("hovered nodes:", hoveredNodes, "CR", cr)
 
 	// Find nodes the mouse just went out of.
 	// mouseOutNodes := cr.mouseOverNodes - hoveredNodes
@@ -83,10 +85,12 @@ func (cr *ContentRenderer) processClickState(
 }
 
 func (cr *ContentRenderer) GetHoveredNodes(pt image.Point) map[dom.Node]bool {
+	log.Println("==================")
 	picked := dom.Pick(cr.rootNode, pt)
 	// TODO: maybe have it returned as a map from pick
 	asMap := make(map[dom.Node]bool, len(picked))
 	for _, node := range picked {
+		log.Printf("over node %#v", dom.Format(node))
 		asMap[node] = true
 	}
 	return asMap
