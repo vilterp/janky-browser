@@ -76,6 +76,8 @@ func (tin *TextInputNode) Attrs() map[string]string {
 }
 
 func (tin *TextInputNode) Draw(gc draw2d.GraphicContext) {
+	topPadding := 15.0
+
 	// Update background rect.
 	tin.backgroundRect.Width = tin.Width
 	tin.backgroundRect.X = tin.X
@@ -93,15 +95,15 @@ func (tin *TextInputNode) Draw(gc draw2d.GraphicContext) {
 	tin.valueText.Fill = tin.TextColor
 	tin.valueText.Value = tin.Value
 	tin.valueText.X = textStartX
-	tin.valueText.Y = tin.Y + 15
+	tin.valueText.Y = tin.Y + topPadding
 
 	// Update cursor.
-	const charWidth = float64(7)
+	const charWidth = float64(15.3) // TODO: measure this with GC
 	cursorX := textStartX + float64(tin.cursorPos)*charWidth
 	tin.cursorLine.X1 = cursorX
 	tin.cursorLine.X2 = cursorX
-	tin.cursorLine.Y1 = tin.Y + 21
-	tin.cursorLine.Y2 = tin.Y + 7
+	tin.cursorLine.Y1 = tin.Y + topPadding + TextHeight
+	tin.cursorLine.Y2 = tin.Y
 	if tin.Focused {
 		tin.cursorLine.Stroke = "black"
 	} else {
@@ -115,9 +117,9 @@ func (tin *TextInputNode) Draw(gc draw2d.GraphicContext) {
 		tin.selectionRect.Fill = "pink"
 		startIdx, endIdx := tin.GetSelection()
 		tin.selectionRect.X = textStartX + float64(startIdx)*charWidth
-		tin.selectionRect.Y = tin.Y + 7
+		tin.selectionRect.Y = tin.Y
 		tin.selectionRect.Width = float64(endIdx-startIdx) * charWidth
-		tin.selectionRect.Height = 13
+		tin.selectionRect.Height = TextHeight + topPadding
 	}
 
 	tin.group.Draw(gc)
