@@ -85,7 +85,7 @@ func (b *Browser) drawChrome(gc draw2d.GraphicContext) {
 	b.currentPage.mu.RLock()
 	defer b.currentPage.mu.RUnlock()
 
-	const urlBarStart = 170
+	const urlBarStart = 180
 
 	// Update URL input.
 	if b.UrlInput.Value == b.currentPage.url {
@@ -93,9 +93,9 @@ func (b *Browser) drawChrome(gc draw2d.GraphicContext) {
 	} else {
 		b.UrlInput.TextColor = "blue"
 	}
-	b.UrlInput.Width = float64(b.window.Size.X - urlBarStart + 5)
+	b.UrlInput.Width = float64(b.window.Size.X - urlBarStart - 5)
 	b.UrlInput.X = urlBarStart
-	b.UrlInput.Y = 30
+	b.UrlInput.Y = 15
 
 	// Update status text.
 	b.stateText.Value = StateNames[b.currentPage.state]

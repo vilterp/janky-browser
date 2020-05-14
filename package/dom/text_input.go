@@ -80,7 +80,7 @@ func (tin *TextInputNode) Draw(gc draw2d.GraphicContext) {
 	tin.backgroundRect.Width = tin.Width
 	tin.backgroundRect.X = tin.X
 	tin.backgroundRect.Y = tin.Y
-	tin.backgroundRect.Height = 30
+	tin.backgroundRect.Height = 35
 	if tin.Focused {
 		tin.backgroundRect.Stroke = "black"
 	} else {
@@ -93,7 +93,7 @@ func (tin *TextInputNode) Draw(gc draw2d.GraphicContext) {
 	tin.valueText.Fill = tin.TextColor
 	tin.valueText.Value = tin.Value
 	tin.valueText.X = textStartX
-	tin.valueText.Y = tin.Y + 10
+	tin.valueText.Y = tin.Y + 15
 
 	// Update cursor.
 	const charWidth = float64(7)

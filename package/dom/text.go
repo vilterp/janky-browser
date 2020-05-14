@@ -50,7 +50,7 @@ func (tn *TextNode) Draw(gc draw2d.GraphicContext) {
 		gc.SetFillColor(image.Black)
 	}
 
-	gc.FillStringAt(tn.Value, tn.X, tn.Y)
+	gc.FillStringAt(tn.Value, tn.X, tn.Y+TextHeight/2)
 	// TODO: uh... what do these numbers mean?
 	left, top, right, bottom := gc.GetStringBounds(tn.Value)
 	tn.bounds = image.Rect(int(left), int(top), int(right), int(bottom))
