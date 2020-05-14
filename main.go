@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"image"
 	"image/color"
 	"log"
+	"unicode"
 
 	"github.com/llgcode/draw2d"
 	"github.com/llgcode/draw2d/draw2dimg"
@@ -75,9 +75,11 @@ func main() {
 				// TODO: only repaint widgets if they're dirty... etc etc
 				window.Send(paint.Event{})
 			case key.Event:
-				fmt.Println("rune:", string(tEvt.Rune))
+				if tEvt.Direction == key.DirRelease {
+					continue // for now
+				}
 				typed := tEvt.Rune
-				if len(string(typed)) > 0 { // ???
+				if unicode.IsPrint(typed) { // ???
 					browser.UrlInput.ProcessTyping(string(typed))
 				}
 				if tEvt.Code == key.CodeDeleteBackspace {
@@ -103,7 +105,6 @@ func main() {
 				if tEvt.Code == key.CodeRightArrow {
 					browser.UrlInput.ProcessRightKey(shiftDown, superDown)
 				}
-				fmt.Println("sending paint")
 				window.Send(paint.Event{})
 			case size.Event:
 				// this implements x'ing out
