@@ -2,10 +2,11 @@ package dom
 
 import (
 	"encoding/xml"
+	"image"
 	"strconv"
 
-	"github.com/faiface/pixel"
-	"github.com/faiface/pixel/imdraw"
+	"github.com/llgcode/draw2d"
+	"github.com/llgcode/draw2d/draw2dkit"
 	"github.com/vilterp/janky-browser/package/util"
 	"golang.org/x/image/colornames"
 )
@@ -41,43 +42,37 @@ func (rn *RectNode) Attrs() map[string]string {
 	}
 }
 
-func (rn *RectNode) Draw(t pixel.Target) {
-	imd := imdraw.New(nil)
-
+func (rn *RectNode) Draw(gc draw2d.GraphicContext) {
 	// Draw fill.
 	fillColor, ok := colornames.Map[rn.Fill]
 	if ok {
-		imd.Color = util.WithTransparency(fillColor, rn.Transparency)
-		imd.Push(pixel.V(rn.X, rn.Y))
-		imd.Push(pixel.V(rn.X+rn.Width, rn.Y+rn.Height))
-		imd.Rectangle(0)
+		gc.SetFillColor(util.WithTransparency(fillColor, rn.Transparency))
+		draw2dkit.Rectangle(gc, rn.X, rn.Y, rn.X+rn.Width, rn.Y+rn.Height)
+		gc.Fill()
 	}
 
 	// Draw stroke.
 	strokeColor, ok := colornames.Map[rn.Stroke]
 	if ok {
-		imd.Color = strokeColor
-		imd.Push(pixel.V(rn.X, rn.Y))
-		imd.Push(pixel.V(rn.X+rn.Width, rn.Y+rn.Height))
-		imd.Rectangle(2)
+		gc.SetStrokeColor(strokeColor)
+		draw2dkit.Rectangle(gc, rn.X, rn.Y, rn.X+rn.Width, rn.Y+rn.Height)
+		gc.Stroke()
 	}
-
-	imd.Draw(t)
 }
 
-func (rn *RectNode) Contains(pt pixel.Vec) bool {
-	return rn.GetBounds().Contains(pt)
+func (rn *RectNode) Contains(pt image.Point) bool {
+	return pt.In(rn.GetBounds())
 }
 
-func (rn *RectNode) GetBounds() pixel.Rect {
-	return pixel.R(rn.X, rn.Y, rn.X+rn.Width, rn.Y+rn.Height)
+func (rn *RectNode) GetBounds() image.Rectangle {
+	return image.Rect(int(rn.X), int(rn.Y), int(rn.X+rn.Width), int(rn.Y+rn.Height))
 }
 
-func RectFromBounds(bounds pixel.Rect) *RectNode {
+func RectFromBounds(bounds image.Rectangle) *RectNode {
 	return &RectNode{
-		X:      bounds.Min.X,
-		Y:      bounds.Min.Y,
-		Width:  bounds.W(),
-		Height: bounds.H(),
+		X:      float64(bounds.Min.X),
+		Y:      float64(bounds.Min.Y),
+		Width:  float64(bounds.Dx()),
+		Height: float64(bounds.Dy()),
 	}
 }

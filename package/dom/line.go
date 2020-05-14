@@ -1,10 +1,10 @@
 package dom
 
 import (
+	"image"
 	"strconv"
 
-	"github.com/faiface/pixel"
-	"github.com/faiface/pixel/imdraw"
+	"github.com/llgcode/draw2d"
 	"golang.org/x/image/colornames"
 )
 
@@ -33,24 +33,21 @@ func (ln *LineNode) Attrs() map[string]string {
 	}
 }
 
-func (ln *LineNode) Draw(t pixel.Target) {
-	imd := imdraw.New(nil)
-
+func (ln *LineNode) Draw(gc draw2d.GraphicContext) {
 	color, ok := colornames.Map[ln.Stroke]
 	if ok {
-		imd.Color = color
-		imd.Push(pixel.V(ln.X1, ln.Y1))
-		imd.Push(pixel.V(ln.X2, ln.Y2))
-		imd.Line(2) // TODO: strokeWidth
-		imd.Draw(t)
+		gc.SetStrokeColor(color)
+		gc.MoveTo(ln.X1, ln.Y1)
+		gc.LineTo(ln.X2, ln.Y2)
+		gc.SetLineWidth(2)
+		gc.Stroke() // stroke width
 	}
 }
 
-func (ln *LineNode) Contains(pixel.Vec) bool {
+func (ln *LineNode) Contains(image.Point) bool {
 	return false
 }
 
-func (ln *LineNode) GetBounds() pixel.Rect {
-	rect := pixel.R(ln.X1, ln.Y1, ln.X2, ln.Y2)
-	return rect.Norm()
+func (ln *LineNode) GetBounds() image.Rectangle {
+	return image.Rect(int(ln.X1), int(ln.Y1), int(ln.X2), int(ln.X2))
 }

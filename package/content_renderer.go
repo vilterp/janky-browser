@@ -1,7 +1,9 @@
 package jankybrowser
 
 import (
-	"github.com/faiface/pixel"
+	"image"
+
+	"github.com/llgcode/draw2d"
 	"github.com/vilterp/janky-browser/package/dom"
 )
 
@@ -29,13 +31,13 @@ func NewContentRenderer(rootNode dom.Node) *ContentRenderer {
 
 // processClickState steps the click state machine, returning clicked nodes if there are any.
 func (cr *ContentRenderer) processClickState(
-	pt pixel.Vec, mouseDown bool, mouseJustDown bool,
+	pt image.Point, mouseDown bool, mouseJustDown bool,
 ) []dom.Node {
 	hoveredNodes := cr.GetHoveredNodes(pt)
 
 	// Find nodes the mouse just went out of.
 	// mouseOutNodes := cr.mouseOverNodes - hoveredNodes
-	for wasOverNode, _ := range cr.mouseOverNodes {
+	for wasOverNode := range cr.mouseOverNodes {
 		if _, ok := hoveredNodes[wasOverNode]; !ok {
 			if wasOverNode.Events().OnMouseOut != nil {
 				wasOverNode.Events().OnMouseOut()
@@ -46,7 +48,7 @@ func (cr *ContentRenderer) processClickState(
 
 	// Find nodes that we just went into.
 	// mouseJustOverNodes = hoveredNodes - mouseOverNodes
-	for hoveredNode, _ := range hoveredNodes {
+	for hoveredNode := range hoveredNodes {
 		if _, ok := cr.mouseOverNodes[hoveredNode]; !ok {
 			cr.mouseOverNodes[hoveredNode] = true
 			if hoveredNode.Events().OnMouseOver != nil {
@@ -60,13 +62,13 @@ func (cr *ContentRenderer) processClickState(
 		// Record nodes the mouse was over when it was clicked.
 		// copy(cr.mouseDownNodes, hoveredNodes)
 		cr.mouseDownNodes = make(map[dom.Node]bool, len(hoveredNodes))
-		for hoveredNode, _ := range hoveredNodes {
+		for hoveredNode := range hoveredNodes {
 			cr.mouseDownNodes[hoveredNode] = true
 		}
 	} else if !mouseDown && len(cr.mouseDownNodes) > 0 {
 		// Mouse was just released. Find which nodes were clicked.
 		// clickedNodes = intersect(cr.mouseDownNodes, mouseOverNodes)
-		for hoveredNode, _ := range hoveredNodes {
+		for hoveredNode := range hoveredNodes {
 			if _, ok := cr.mouseDownNodes[hoveredNode]; ok {
 				// This node was clicked.
 				if hoveredNode.Events().OnClick != nil {
@@ -80,7 +82,7 @@ func (cr *ContentRenderer) processClickState(
 	return clickedNodes
 }
 
-func (cr *ContentRenderer) GetHoveredNodes(pt pixel.Vec) map[dom.Node]bool {
+func (cr *ContentRenderer) GetHoveredNodes(pt image.Point) map[dom.Node]bool {
 	picked := dom.Pick(cr.rootNode, pt)
 	// TODO: maybe have it returned as a map from pick
 	asMap := make(map[dom.Node]bool, len(picked))
@@ -90,8 +92,8 @@ func (cr *ContentRenderer) GetHoveredNodes(pt pixel.Vec) map[dom.Node]bool {
 	return asMap
 }
 
-func (cr *ContentRenderer) Draw(t pixel.Target) {
-	cr.rootNode.Draw(t)
+func (cr *ContentRenderer) Draw(gc draw2d.GraphicContext) {
+	cr.rootNode.Draw(gc)
 
 	// Draw highlight rect if we have a highlighted node.
 	if cr.highlightedNode == nil {
@@ -99,7 +101,7 @@ func (cr *ContentRenderer) Draw(t pixel.Target) {
 	}
 	highlightRect := dom.RectFromBounds(cr.highlightedNode.GetBounds())
 	highlightRect.Stroke = "red"
-	highlightRect.Draw(t)
+	highlightRect.Draw(gc)
 }
 
 func (cr *ContentRenderer) SetHighlightedNode(node dom.Node) {

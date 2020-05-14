@@ -1,7 +1,9 @@
 package dom
 
 import (
-	"github.com/faiface/pixel"
+	"image"
+
+	"github.com/llgcode/draw2d"
 )
 
 type Node interface {
@@ -10,9 +12,9 @@ type Node interface {
 	Children() []Node
 
 	Init()
-	Draw(target pixel.Target)
-	Contains(pixel.Vec) bool
-	GetBounds() pixel.Rect
+	Draw(ctx draw2d.GraphicContext)
+	Contains(image.Point) bool
+	GetBounds() image.Rectangle
 
 	Events() *EventHandlers
 }

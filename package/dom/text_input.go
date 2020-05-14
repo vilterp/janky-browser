@@ -2,9 +2,10 @@ package dom
 
 import (
 	"fmt"
+	"image"
 	"strconv"
 
-	"github.com/faiface/pixel"
+	"github.com/llgcode/draw2d"
 	"github.com/vilterp/janky-browser/package/util"
 )
 
@@ -74,16 +75,18 @@ func (tin *TextInputNode) Attrs() map[string]string {
 	}
 }
 
-func (tin *TextInputNode) Draw(t pixel.Target) {
+func (tin *TextInputNode) Draw(gc draw2d.GraphicContext) {
+	topPadding := 15.0
+
 	// Update background rect.
 	tin.backgroundRect.Width = tin.Width
 	tin.backgroundRect.X = tin.X
 	tin.backgroundRect.Y = tin.Y
-	tin.backgroundRect.Height = 30
+	tin.backgroundRect.Height = 35
 	if tin.Focused {
 		tin.backgroundRect.Stroke = "black"
 	} else {
-		tin.backgroundRect.Stroke = ""
+		tin.backgroundRect.Stroke = "grey"
 	}
 
 	textStartX := tin.X + 5
@@ -92,15 +95,15 @@ func (tin *TextInputNode) Draw(t pixel.Target) {
 	tin.valueText.Fill = tin.TextColor
 	tin.valueText.Value = tin.Value
 	tin.valueText.X = textStartX
-	tin.valueText.Y = tin.Y + 10
+	tin.valueText.Y = tin.Y + topPadding
 
 	// Update cursor.
-	const charWidth = float64(7)
+	const charWidth = float64(15.3) // TODO: measure this with GC
 	cursorX := textStartX + float64(tin.cursorPos)*charWidth
 	tin.cursorLine.X1 = cursorX
 	tin.cursorLine.X2 = cursorX
-	tin.cursorLine.Y1 = tin.Y + 21
-	tin.cursorLine.Y2 = tin.Y + 7
+	tin.cursorLine.Y1 = tin.Y + topPadding + TextHeight
+	tin.cursorLine.Y2 = tin.Y
 	if tin.Focused {
 		tin.cursorLine.Stroke = "black"
 	} else {
@@ -114,15 +117,15 @@ func (tin *TextInputNode) Draw(t pixel.Target) {
 		tin.selectionRect.Fill = "pink"
 		startIdx, endIdx := tin.GetSelection()
 		tin.selectionRect.X = textStartX + float64(startIdx)*charWidth
-		tin.selectionRect.Y = tin.Y + 7
+		tin.selectionRect.Y = tin.Y
 		tin.selectionRect.Width = float64(endIdx-startIdx) * charWidth
-		tin.selectionRect.Height = 13
+		tin.selectionRect.Height = TextHeight + topPadding
 	}
 
-	tin.group.Draw(t)
+	tin.group.Draw(gc)
 }
 
-func (tin *TextInputNode) Contains(pt pixel.Vec) bool {
+func (tin *TextInputNode) Contains(pt image.Point) bool {
 	return tin.backgroundRect.Contains(pt)
 }
 
@@ -248,6 +251,6 @@ func (tin *TextInputNode) SelectAll() {
 	tin.selectionStart = &zero
 }
 
-func (tin *TextInputNode) GetBounds() pixel.Rect {
+func (tin *TextInputNode) GetBounds() image.Rectangle {
 	return tin.backgroundRect.GetBounds()
 }

@@ -2,10 +2,12 @@ package dom
 
 import (
 	"encoding/xml"
+	"image"
+	"math"
 	"strconv"
 
-	"github.com/faiface/pixel"
-	"github.com/faiface/pixel/imdraw"
+	"github.com/llgcode/draw2d"
+	"github.com/llgcode/draw2d/draw2dkit"
 	"golang.org/x/image/colornames"
 )
 
@@ -35,28 +37,31 @@ func (cn *CircleNode) Attrs() map[string]string {
 	}
 }
 
-func (cn *CircleNode) Draw(t pixel.Target) {
-	imd := imdraw.New(nil)
-
+func (cn *CircleNode) Draw(gc draw2d.GraphicContext) {
 	color, ok := colornames.Map[cn.Fill]
 	if !ok {
-		imd.Color = colornames.Black
+		gc.SetFillColor(colornames.Black)
 	} else {
-		imd.Color = color
+		gc.SetFillColor(color)
 	}
-	imd.Push(pixel.V(cn.X, cn.Y))
-	imd.Circle(cn.Radius, 0)
+	draw2dkit.Circle(gc, cn.X, cn.Y, cn.Radius)
+	gc.Fill()
 	// TODO: support stroke as well
-
-	imd.Draw(t)
 }
 
-func (cn *CircleNode) Contains(pt pixel.Vec) bool {
-	center := pixel.V(cn.X, cn.Y)
+func (cn *CircleNode) Contains(pt image.Point) bool {
+	center := image.Pt(int(cn.X), int(cn.Y))
 	diff := pt.Sub(center)
-	return diff.Len() <= cn.Radius
+	return pointLength(diff) <= cn.Radius
 }
 
-func (cn *CircleNode) GetBounds() pixel.Rect {
-	return pixel.R(cn.X-cn.Radius, cn.Y-cn.Radius, cn.X+cn.Radius, cn.Y+cn.Radius)
+func (cn *CircleNode) GetBounds() image.Rectangle {
+	return image.Rect(
+		int(cn.X-cn.Radius), int(cn.Y-cn.Radius),
+		int(cn.X+cn.Radius), int(cn.Y+cn.Radius),
+	)
+}
+
+func pointLength(pt image.Point) float64 {
+	return math.Sqrt(math.Pow(float64(pt.X), 2) + math.Pow(float64(pt.Y), 2))
 }
