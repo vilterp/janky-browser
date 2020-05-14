@@ -67,12 +67,13 @@ func main() {
 				buf.Release()
 			case mouse.Event:
 				// Handle mouse events.
-				fmt.Println("mouse evt")
 				browser.ProcessMouseEvents(
 					image.Pt(int(tEvt.X), int(tEvt.Y)),
 					tEvt.Direction == mouse.DirPress,
 					true, // ???
 				)
+				// TODO: only repaint widgets if they're dirty... etc etc
+				window.Send(paint.Event{})
 			case key.Event:
 				fmt.Println("rune:", string(tEvt.Rune))
 				typed := tEvt.Rune
@@ -102,6 +103,8 @@ func main() {
 				if tEvt.Code == key.CodeRightArrow {
 					browser.UrlInput.ProcessRightKey(shiftDown, superDown)
 				}
+				fmt.Println("sending paint")
+				window.Send(paint.Event{})
 			case size.Event:
 				// this implements x'ing out
 				if tEvt.Size() == image.Pt(0, 0) {
