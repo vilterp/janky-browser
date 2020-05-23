@@ -20,7 +20,7 @@ import (
 	"golang.org/x/mobile/event/size"
 )
 
-const initPage = "http://localhost:8080/circleRectText.svg"
+const initPage = "http://localhost:8080/justCircle.svg"
 
 func main() {
 	driver.Main(func(curScreen screen.Screen) {
@@ -69,8 +69,8 @@ func main() {
 				// Handle mouse events.
 				browser.ProcessMouseEvents(
 					image.Pt(int(tEvt.X), int(tEvt.Y)),
+					tEvt.Button == mouse.ButtonLeft,
 					tEvt.Direction == mouse.DirPress,
-					true, // ???
 				)
 				// TODO: only repaint widgets if they're dirty... etc etc
 				window.Send(paint.Event{})

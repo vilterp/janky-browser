@@ -129,11 +129,14 @@ func (bp *BrowserPage) ProcessMouseEvents(pt image.Point, mouseDown bool, mouseJ
 
 	clickedNodes := bp.renderer.processClickState(pt, mouseDown, mouseJustDown)
 
+	fmt.Println("ProcessMouseEvents ============")
 	var navigateTo string
 	if len(clickedNodes) > 0 {
-		for _, hoveredNode := range clickedNodes {
-			switch n := hoveredNode.(type) {
+		for _, node := range clickedNodes {
+			fmt.Println("node", dom.Format(node))
+			switch n := node.(type) {
 			case *dom.GroupNode:
+				fmt.Println("node", node.Name(), "((((((", n.Href, "))))))")
 				if n.Href != "" {
 					navigateTo = n.Href
 				}
